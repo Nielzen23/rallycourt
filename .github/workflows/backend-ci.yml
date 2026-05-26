@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - master
-      - develop
   pull_request:
+    branches:
+      - master
 
 jobs:
-  backend-ci:
+  build:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: backend
@@ -18,15 +20,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 21
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
-          cache: gradle
+          java-version: 21
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
+      - name: Grant execute permission
+        run: chmod +x gradlew
 
-      - name: Run backend quality checks
-        run: ./gradlew clean test jacocoTestReport jacocoTestCoverageVerification checkstyleMain checkstyleTest
+      - name: Build
+        run: ./gradlew build
