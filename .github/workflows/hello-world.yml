@@ -7,8 +7,25 @@ on:
   workflow_dispatch:
 
 jobs:
-  say-hello:
+  backend-ci:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
-      - name: Print Hello
-        run: echo "Hello, World!"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Run backend quality checks
+        run: ./gradlew clean test jacocoTestReport jacocoTestCoverageVerification checkstyleMain checkstyleTest
