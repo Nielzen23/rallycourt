@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-activity-log-collection
+      author: neilzendetorres
+      changes:
+        - createCollection:
+            collectionName: activity_logs
+        - createIndex:
+            collectionName: activity_logs
+            keys: |
+              {
+                "createdAt": 1
+              }
+            options: |
+              {
+                "name": "idx_activity_logs_created_at"
+              }

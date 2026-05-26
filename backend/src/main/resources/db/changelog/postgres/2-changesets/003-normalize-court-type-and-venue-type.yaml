@@ -1,0 +1,198 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-normalize-court-type-and-venue-type
+      author: neilzendetorres
+      changes:
+        - createTable:
+            tableName: court_type
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: code
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+        - createTable:
+            tableName: venue_type
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: code
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+        - createTable:
+            tableName: court_type_venue_type
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: court_type_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: venue_type_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: court_type_venue_type
+            columnNames: court_type_id, venue_type_id
+            constraintName: uk_court_type_venue_type_pair
+        - addForeignKeyConstraint:
+            baseTableName: court_type_venue_type
+            baseColumnNames: court_type_id
+            constraintName: fk_ctvt_court_type
+            referencedTableName: court_type
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: court_type_venue_type
+            baseColumnNames: venue_type_id
+            constraintName: fk_ctvt_venue_type
+            referencedTableName: venue_type
+            referencedColumnNames: id
+        - insert:
+            tableName: court_type
+            columns:
+              - column: { name: code, value: BASKETBALL }
+        - insert:
+            tableName: court_type
+            columns:
+              - column: { name: code, value: BADMINTON }
+        - insert:
+            tableName: court_type
+            columns:
+              - column: { name: code, value: PICKLEBALL }
+        - insert:
+            tableName: court_type
+            columns:
+              - column: { name: code, value: FUTSAL }
+        - insert:
+            tableName: venue_type
+            columns:
+              - column: { name: code, value: INDOOR }
+        - insert:
+            tableName: venue_type
+            columns:
+              - column: { name: code, value: OUTDOOR }
+        - sql:
+            sql: |
+              INSERT INTO court_type_venue_type (version, court_type_id, venue_type_id)
+              SELECT 0, ct.id, vt.id
+              FROM court_type ct
+              JOIN venue_type vt ON vt.code IN ('INDOOR', 'OUTDOOR')
+              WHERE ct.code IN ('BASKETBALL', 'PICKLEBALL');
+        - sql:
+            sql: |
+              INSERT INTO court_type_venue_type (version, court_type_id, venue_type_id)
+              SELECT 0, ct.id, vt.id
+              FROM court_type ct
+              JOIN venue_type vt ON vt.code = 'INDOOR'
+              WHERE ct.code IN ('BADMINTON', 'FUTSAL');
+        - addColumn:
+            tableName: court
+            columns:
+              - column:
+                  name: court_type_id
+                  type: BIGINT
+              - column:
+                  name: venue_type_id
+                  type: BIGINT
+        - sql:
+            sql: |
+              UPDATE court
+              SET court_type_id = (
+                SELECT id
+                FROM court_type
+                WHERE code = COALESCE(court.court_type, 'BASKETBALL')
+              );
+        - sql:
+            sql: |
+              UPDATE court
+              SET venue_type_id = (
+                SELECT id
+                FROM venue_type
+                WHERE code = COALESCE(court.venue_type, 'OUTDOOR')
+              );
+        - addNotNullConstraint:
+            tableName: court
+            columnName: court_type_id
+            columnDataType: BIGINT
+        - addNotNullConstraint:
+            tableName: court
+            columnName: venue_type_id
+            columnDataType: BIGINT
+        - addForeignKeyConstraint:
+            baseTableName: court
+            baseColumnNames: court_type_id
+            constraintName: fk_court_court_type
+            referencedTableName: court_type
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: court
+            baseColumnNames: venue_type_id
+            constraintName: fk_court_venue_type
+            referencedTableName: venue_type
+            referencedColumnNames: id
+        - dropColumn:
+            tableName: court
+            columnName: court_type
+        - dropColumn:
+            tableName: court
+            columnName: venue_type

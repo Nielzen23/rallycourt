@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-add-court-type-and-venue-type
+      author: neilzendetorres
+      changes:
+        - addColumn:
+            tableName: court
+            columns:
+              - column:
+                  name: court_type
+                  type: VARCHAR(50)
+                  defaultValue: BASKETBALL
+                  constraints:
+                    nullable: false
+              - column:
+                  name: venue_type
+                  type: VARCHAR(50)
+                  defaultValue: OUTDOOR
+                  constraints:
+                    nullable: false

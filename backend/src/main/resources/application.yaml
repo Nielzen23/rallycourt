@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: rallycourt-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/rallycourt}
+    username: ${SPRING_DATASOURCE_USERNAME:rallycourt}
+    password: ${SPRING_DATASOURCE_PASSWORD:rallycourt}
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://rallycourt:rallycourt@localhost:27017/rallycourt?authSource=admin}
+  jpa:
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    change-log: classpath:db/changelog/postgres/db.changelog-master.yaml
+    enabled: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:VGhpc0lzQVNlY3VyZURlbW9TZWNyZXRGb3JKV1RUaGF0SXNMb25nRW5vdWdoMTIzNDU2}
+  geocoding:
+    geoapify:
+      api-key: ${GEOAPIFY_API_KEY:2d66ecf7de99423c8d807b296cf3ba02}
+  reservation:
+    allowed-durations-minutes: ${RESERVATION_ALLOWED_DURATIONS_MINUTES:60,90,120}
+
+logging:
+  level:
+    root: INFO
+    com.rallycourt: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    liquibase: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"

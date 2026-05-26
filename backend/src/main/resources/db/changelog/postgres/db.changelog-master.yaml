@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - includeAll:
+      path: db/changelog/postgres/1-base-tables
+  - includeAll:
+      path: db/changelog/postgres/2-changesets

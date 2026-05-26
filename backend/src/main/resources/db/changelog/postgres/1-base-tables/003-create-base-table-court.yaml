@@ -1,0 +1,64 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-base-table-court
+      author: neilzendetorres
+      changes:
+        - createTable:
+            tableName: court
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: location
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: latitude
+                  type: DOUBLE PRECISION
+              - column:
+                  name: longitude
+                  type: DOUBLE PRECISION
+              - column:
+                  name: open_time
+                  type: TIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: close_time
+                  type: TIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: owner_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: court
+            baseColumnNames: owner_user_id
+            constraintName: fk_court_owner_user
+            referencedTableName: users
+            referencedColumnNames: id

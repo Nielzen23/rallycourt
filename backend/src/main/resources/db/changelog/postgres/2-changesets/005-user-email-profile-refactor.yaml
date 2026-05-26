@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-user-email-profile-refactor
+      author: neilzendetorres
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: first_name
+                  type: VARCHAR(50)
+              - column:
+                  name: last_name
+                  type: VARCHAR(50)
+              - column:
+                  name: mobile_number
+                  type: VARCHAR(20)
+        - sql:
+            sql: |
+              UPDATE users
+              SET
+                first_name = COALESCE(first_name, 'RallyCourt'),
+                last_name = COALESCE(last_name, 'User'),
+                mobile_number = COALESCE(mobile_number, '09170000000'),
+                email = LOWER(email)
+              WHERE first_name IS NULL
+                 OR last_name IS NULL
+                 OR mobile_number IS NULL
+                 OR email <> LOWER(email);
+        - addNotNullConstraint:
+            tableName: users
+            columnName: first_name
+            columnDataType: VARCHAR(50)
+        - addNotNullConstraint:
+            tableName: users
+            columnName: last_name
+            columnDataType: VARCHAR(50)
+        - addNotNullConstraint:
+            tableName: users
+            columnName: mobile_number
+            columnDataType: VARCHAR(20)
+        - dropColumn:
+            tableName: users
+            columnName: username

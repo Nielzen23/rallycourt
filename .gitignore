@@ -1,0 +1,15 @@
+# Backend
+/backend/.gradle/
+/backend/build/
+/backend/out/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

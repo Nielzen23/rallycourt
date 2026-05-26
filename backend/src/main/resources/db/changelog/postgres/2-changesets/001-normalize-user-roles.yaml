@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-normalize-user-roles
+      author: neilzendetorres
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO roles (name) VALUES ('ADMIN');
+              INSERT INTO roles (name) VALUES ('PLAYER');
+              INSERT INTO roles (name) VALUES ('COURT_OWNER');
+              INSERT INTO roles (name) VALUES ('GUEST');
+              INSERT INTO users (username, password, role_id)
+              VALUES (
+                'AdminRallyCourt',
+                '$2a$10$pgcWr2L43uT6C41HVBcAcewfpqGottWYXkwZlXBTUK9jAMZTrYpWa',
+                (SELECT id FROM roles WHERE name = 'ADMIN')
+              );

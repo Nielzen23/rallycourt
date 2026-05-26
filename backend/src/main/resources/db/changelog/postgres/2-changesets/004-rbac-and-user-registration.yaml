@@ -1,0 +1,72 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-rbac-and-user-registration
+      author: neilzendetorres
+      changes:
+        - addColumn:
+            tableName: roles
+            columns:
+              - column:
+                  name: code
+                  type: VARCHAR(100)
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+        - sql:
+            sql: |
+              UPDATE roles
+              SET code = name
+              WHERE code IS NULL;
+        - addNotNullConstraint:
+            tableName: roles
+            columnName: code
+            columnDataType: VARCHAR(100)
+        - addUniqueConstraint:
+            tableName: roles
+            columnNames: code
+            constraintName: uk_roles_code
+        - sql:
+            sql: |
+              UPDATE roles
+              SET
+                name = CASE code
+                  WHEN 'ADMIN' THEN 'Administrator'
+                  WHEN 'PLAYER' THEN 'Player'
+                  WHEN 'COURT_OWNER' THEN 'Court Owner'
+                  WHEN 'GUEST' THEN 'Guest'
+                  ELSE name
+                END,
+                description = CASE code
+                  WHEN 'ADMIN' THEN 'System administrator'
+                  WHEN 'PLAYER' THEN 'Standard player account'
+                  WHEN 'COURT_OWNER' THEN 'Approved court owner'
+                  WHEN 'GUEST' THEN 'Guest access'
+                  ELSE description
+                END;
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+              - column:
+                  name: court_owner_status
+                  type: VARCHAR(50)
+                  defaultValue: NONE
+        - sql:
+            sql: |
+              UPDATE users
+              SET email = CONCAT(LOWER(username), '@rallycourt.local')
+              WHERE email IS NULL;
+        - addNotNullConstraint:
+            tableName: users
+            columnName: email
+            columnDataType: VARCHAR(255)
+        - addUniqueConstraint:
+            tableName: users
+            columnNames: email
+            constraintName: uk_users_email
+        - addNotNullConstraint:
+            tableName: users
+            columnName: court_owner_status
+            columnDataType: VARCHAR(50)
