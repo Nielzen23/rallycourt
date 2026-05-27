@@ -12,10 +12,13 @@ public record ReservationSummaryResponse(
         Double latitude,
         Double longitude,
         String reservedBy,
+        String contactName,
+        String contactMobileNumber,
         LocalDateTime startTime,
         LocalDateTime endTime,
         LocalDateTime expiresAt,
         String status,
+        String paymentStatus,
         BigDecimal amountDue
 ) {
 }

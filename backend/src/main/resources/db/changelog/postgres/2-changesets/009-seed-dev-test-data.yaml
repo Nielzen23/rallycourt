@@ -1,0 +1,267 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-seed-dev-test-data
+      author: neilzendetorres
+      context: dev
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO users (
+                id,
+                version,
+                created_by,
+                updated_by,
+                password,
+                role_id,
+                email,
+                court_owner_status,
+                first_name,
+                last_name,
+                mobile_number
+              )
+              SELECT
+                seed.id,
+                0,
+                'liquibase-dev-seed',
+                'liquibase-dev-seed',
+                '$2a$10$pgcWr2L43uT6C41HVBcAcewfpqGottWYXkwZlXBTUK9jAMZTrYpWa',
+                roles.id,
+                seed.email,
+                seed.court_owner_status,
+                seed.first_name,
+                seed.last_name,
+                seed.mobile_number
+              FROM (
+                VALUES
+                  (1001, 'PLAYER', 'NONE', 'testGenerated1@generated.com', 'Alden', 'Rivera', '09170000001'),
+                  (1002, 'PLAYER', 'NONE', 'testGenerated2@generated.com', 'Bianca', 'Santos', '09170000002'),
+                  (1003, 'PLAYER', 'NONE', 'testGenerated3@generated.com', 'Carlo', 'Mendoza', '09170000003'),
+                  (1004, 'PLAYER', 'NONE', 'testGenerated4@generated.com', 'Dana', 'Flores', '09170000004'),
+                  (1005, 'PLAYER', 'NONE', 'testGenerated5@generated.com', 'Enzo', 'Garcia', '09170000005'),
+                  (1006, 'PLAYER', 'NONE', 'testGenerated6@generated.com', 'Faith', 'Reyes', '09170000006'),
+                  (1007, 'PLAYER', 'NONE', 'testGenerated7@generated.com', 'Gavin', 'Torres', '09170000007'),
+                  (1008, 'PLAYER', 'NONE', 'testGenerated8@generated.com', 'Hannah', 'Lopez', '09170000008'),
+                  (1009, 'PLAYER', 'NONE', 'testGenerated9@generated.com', 'Ivan', 'Cruz', '09170000009'),
+                  (1010, 'PLAYER', 'NONE', 'testGenerated10@generated.com', 'Julia', 'Navarro', '09170000010'),
+                  (1011, 'PLAYER', 'NONE', 'testGenerated11@generated.com', 'Kyle', 'Domingo', '09170000011'),
+                  (1012, 'PLAYER', 'NONE', 'testGenerated12@generated.com', 'Lara', 'Villanueva', '09170000012'),
+                  (1013, 'PLAYER', 'NONE', 'testGenerated13@generated.com', 'Marco', 'Dizon', '09170000013'),
+                  (1014, 'PLAYER', 'NONE', 'testGenerated14@generated.com', 'Nina', 'Aquino', '09170000014'),
+                  (1015, 'PLAYER', 'NONE', 'testGenerated15@generated.com', 'Owen', 'Castillo', '09170000015'),
+                  (1016, 'COURT_OWNER', 'APPROVED', 'testGenerated16@generated.com', 'Paolo', 'Sy', '09170000016'),
+                  (1017, 'COURT_OWNER', 'APPROVED', 'testGenerated17@generated.com', 'Queenie', 'Lim', '09170000017'),
+                  (1018, 'COURT_OWNER', 'APPROVED', 'testGenerated18@generated.com', 'Rafael', 'Go', '09170000018')
+              ) AS seed(id, role_code, court_owner_status, email, first_name, last_name, mobile_number)
+              JOIN roles
+                ON roles.code = seed.role_code
+              LEFT JOIN users existing
+                ON existing.email = seed.email
+              WHERE existing.id IS NULL;
+
+              INSERT INTO court (
+                id,
+                version,
+                created_by,
+                updated_by,
+                name,
+                location,
+                latitude,
+                longitude,
+                open_time,
+                close_time,
+                owner_user_id,
+                court_type_id,
+                venue_type_id,
+                status,
+                hourly_rate
+              )
+              SELECT
+                seed.id,
+                0,
+                'liquibase-dev-seed',
+                'liquibase-dev-seed',
+                seed.name,
+                seed.location,
+                seed.latitude,
+                seed.longitude,
+                seed.open_time::time,
+                seed.close_time::time,
+                seed.owner_user_id,
+                court_type.id,
+                venue_type.id,
+                seed.status,
+                seed.hourly_rate
+              FROM (
+                VALUES
+                  (1101, 'Manila Central Court 1', 'Ermita, Manila', 14.5869, 120.9818, '08:00', '22:00', 1016, 'BASKETBALL', 'INDOOR', 'AVAILABLE', 900.00),
+                  (1102, 'Manila Central Court 2', 'Malate, Manila', 14.5708, 120.9911, '08:00', '22:00', 1016, 'BADMINTON', 'INDOOR', 'AVAILABLE', 750.00),
+                  (1103, 'Pasig Riverside Court', 'Ortigas, Pasig', 14.5866, 121.0623, '07:00', '21:00', 1016, 'PICKLEBALL', 'OUTDOOR', 'AVAILABLE', 680.00),
+                  (1104, 'Makati Summit Court', 'Poblacion, Makati', 14.5651, 121.0293, '08:00', '23:00', 1016, 'BADMINTON', 'INDOOR', 'AVAILABLE', 820.00),
+                  (1105, 'Quezon Athletic Court', 'Cubao, Quezon City', 14.6205, 121.0523, '06:00', '22:00', 1016, 'BASKETBALL', 'OUTDOOR', 'AVAILABLE', 950.00),
+                  (1106, 'Taguig Skyline Court', 'BGC, Taguig', 14.5507, 121.0498, '08:00', '22:00', 1016, 'PICKLEBALL', 'OUTDOOR', 'AVAILABLE', 700.00),
+                  (1107, 'Paranaque South Court', 'Baclaran, Paranaque', 14.5101, 120.9984, '08:00', '21:00', 1016, 'FUTSAL', 'INDOOR', 'AVAILABLE', 1200.00),
+                  (1108, 'Pasay Harbor Court', 'Pasay City', 14.5378, 120.9995, '07:00', '22:00', 1016, 'BADMINTON', 'INDOOR', 'AVAILABLE', 780.00),
+                  (1109, 'Mandaluyong Metro Court', 'Mandaluyong City', 14.5794, 121.0359, '08:00', '22:00', 1016, 'BASKETBALL', 'INDOOR', 'AVAILABLE', 920.00),
+                  (1110, 'San Juan Elite Court', 'San Juan City', 14.6019, 121.0355, '08:00', '22:00', 1016, 'PICKLEBALL', 'OUTDOOR', 'AVAILABLE', 720.00),
+                  (1111, 'Marikina Valley Court', 'Marikina City', 14.6507, 121.1029, '07:00', '21:00', 1017, 'BADMINTON', 'INDOOR', 'AVAILABLE', 760.00),
+                  (1112, 'Las Pinas South Court', 'Las Pinas City', 14.4445, 120.9936, '08:00', '22:00', 1017, 'FUTSAL', 'INDOOR', 'AVAILABLE', 1180.00),
+                  (1113, 'Muntinlupa Lakeside Court', 'Alabang, Muntinlupa', 14.4233, 121.0335, '08:00', '22:00', 1017, 'BADMINTON', 'INDOOR', 'AVAILABLE', 790.00),
+                  (1114, 'Valenzuela North Court', 'Valenzuela City', 14.7006, 120.9830, '08:00', '21:00', 1017, 'BASKETBALL', 'OUTDOOR', 'AVAILABLE', 910.00),
+                  (1115, 'Navotas Bay Court', 'Navotas City', 14.6667, 120.9417, '08:00', '20:00', 1017, 'PICKLEBALL', 'OUTDOOR', 'AVAILABLE', 650.00),
+                  (1116, 'Malabon Community Court', 'Malabon City', 14.6627, 120.9570, '08:00', '20:00', 1017, 'BADMINTON', 'INDOOR', 'AVAILABLE', 740.00),
+                  (1117, 'Caloocan Prime Court', 'Caloocan City', 14.6500, 120.9667, '07:00', '21:00', 1017, 'BASKETBALL', 'OUTDOOR', 'AVAILABLE', 905.00),
+                  (1118, 'Pasig East Court', 'Kapitolyo, Pasig', 14.5660, 121.0684, '08:00', '22:00', 1017, 'PICKLEBALL', 'OUTDOOR', 'AVAILABLE', 710.00),
+                  (1119, 'Makati West Court', 'Salcedo Village, Makati', 14.5597, 121.0244, '08:00', '22:00', 1017, 'BADMINTON', 'INDOOR', 'AVAILABLE', 830.00),
+                  (1120, 'Taguig Field Court', 'Taguig City', 14.5176, 121.0509, '08:00', '22:00', 1017, 'FUTSAL', 'INDOOR', 'AVAILABLE', 1210.00),
+                  (1121, 'Lipa Downtown Court', 'Lipa City, Batangas', 13.9411, 121.1631, '08:00', '22:00', 1018, 'BADMINTON', 'INDOOR', 'AVAILABLE', 700.00),
+                  (1122, 'Lipa Sports Hub 1', 'Sabang, Lipa City, Batangas', 13.9418, 121.1657, '08:00', '22:00', 1018, 'BASKETBALL', 'OUTDOOR', 'AVAILABLE', 880.00),
+                  (1123, 'Lipa Sports Hub 2', 'Marauoy, Lipa City, Batangas', 13.9508, 121.1524, '08:00', '21:00', 1018, 'PICKLEBALL', 'OUTDOOR', 'AVAILABLE', 640.00),
+                  (1124, 'Lipa South Court', 'Tambo, Lipa City, Batangas', 13.9333, 121.1667, '08:00', '21:00', 1018, 'BADMINTON', 'INDOOR', 'AVAILABLE', 690.00),
+                  (1125, 'Tanauan Arena Court', 'Tanauan City, Batangas', 14.0833, 121.1500, '08:00', '22:00', 1018, 'BASKETBALL', 'INDOOR', 'AVAILABLE', 940.00),
+                  (1126, 'Santo Tomas Court', 'Santo Tomas, Batangas', 14.1078, 121.1414, '08:00', '22:00', 1018, 'FUTSAL', 'INDOOR', 'AVAILABLE', 1150.00),
+                  (1127, 'Malvar Fitness Court', 'Malvar, Batangas', 14.0447, 121.1581, '07:00', '21:00', 1018, 'BADMINTON', 'INDOOR', 'AVAILABLE', 680.00),
+                  (1128, 'Balete Open Court', 'Balete, Batangas', 14.0300, 121.1000, '07:00', '20:00', 1018, 'PICKLEBALL', 'OUTDOOR', 'AVAILABLE', 620.00),
+                  (1129, 'Mataasnakahoy Court', 'Mataasnakahoy, Batangas', 13.9587, 121.1138, '08:00', '20:00', 1018, 'BADMINTON', 'INDOOR', 'AVAILABLE', 660.00),
+                  (1130, 'Batangas North Court', 'Lodlod, Lipa City, Batangas', 13.9491, 121.1708, '08:00', '22:00', 1018, 'BASKETBALL', 'OUTDOOR', 'AVAILABLE', 870.00)
+              ) AS seed(
+                id,
+                name,
+                location,
+                latitude,
+                longitude,
+                open_time,
+                close_time,
+                owner_user_id,
+                court_type_code,
+                venue_type_code,
+                status,
+                hourly_rate
+              )
+              JOIN court_type
+                ON court_type.code = seed.court_type_code
+              JOIN venue_type
+                ON venue_type.code = seed.venue_type_code
+              LEFT JOIN court existing
+                ON existing.id = seed.id
+              WHERE existing.id IS NULL;
+
+              INSERT INTO reservation (
+                id,
+                version,
+                created_by,
+                updated_by,
+                court_id,
+                reserved_by,
+                start_time,
+                end_time,
+                expires_at,
+                status,
+                amount_due
+              )
+              SELECT
+                seed.id,
+                0,
+                'liquibase-dev-seed',
+                'liquibase-dev-seed',
+                seed.court_id,
+                seed.reserved_by,
+                seed.start_time,
+                seed.end_time,
+                seed.expires_at,
+                seed.status,
+                seed.amount_due
+              FROM (
+                VALUES
+                  (1201, 1101, 'testGenerated1@generated.com', CURRENT_TIMESTAMP - INTERVAL '20 days', CURRENT_TIMESTAMP - INTERVAL '20 days' + INTERVAL '60 minutes', NULL, 'CONFIRMED', 900.00),
+                  (1202, 1102, 'testGenerated2@generated.com', CURRENT_TIMESTAMP - INTERVAL '18 days', CURRENT_TIMESTAMP - INTERVAL '18 days' + INTERVAL '90 minutes', NULL, 'CONFIRMED', 1125.00),
+                  (1203, 1103, 'testGenerated3@generated.com', CURRENT_TIMESTAMP - INTERVAL '17 days', CURRENT_TIMESTAMP - INTERVAL '17 days' + INTERVAL '120 minutes', NULL, 'CONFIRMED', 1360.00),
+                  (1204, 1104, 'testGenerated4@generated.com', CURRENT_TIMESTAMP - INTERVAL '16 days', CURRENT_TIMESTAMP - INTERVAL '16 days' + INTERVAL '60 minutes', NULL, 'CONFIRMED', 820.00),
+                  (1205, 1105, 'testGenerated5@generated.com', CURRENT_TIMESTAMP - INTERVAL '15 days', CURRENT_TIMESTAMP - INTERVAL '15 days' + INTERVAL '90 minutes', NULL, 'CONFIRMED', 1425.00),
+                  (1206, 1106, 'testGenerated6@generated.com', CURRENT_TIMESTAMP - INTERVAL '14 days', CURRENT_TIMESTAMP - INTERVAL '14 days' + INTERVAL '60 minutes', NULL, 'CONFIRMED', 700.00),
+                  (1207, 1107, 'testGenerated7@generated.com', CURRENT_TIMESTAMP - INTERVAL '13 days', CURRENT_TIMESTAMP - INTERVAL '13 days' + INTERVAL '120 minutes', NULL, 'CONFIRMED', 2400.00),
+                  (1208, 1108, 'testGenerated8@generated.com', CURRENT_TIMESTAMP - INTERVAL '12 days', CURRENT_TIMESTAMP - INTERVAL '12 days' + INTERVAL '90 minutes', NULL, 'CONFIRMED', 1170.00),
+                  (1209, 1109, 'testGenerated9@generated.com', CURRENT_TIMESTAMP - INTERVAL '11 days', CURRENT_TIMESTAMP - INTERVAL '11 days' + INTERVAL '60 minutes', NULL, 'CONFIRMED', 920.00),
+                  (1210, 1110, 'testGenerated10@generated.com', CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP - INTERVAL '10 days' + INTERVAL '120 minutes', NULL, 'CONFIRMED', 1440.00),
+                  (1211, 1111, 'testGenerated11@generated.com', CURRENT_TIMESTAMP - INTERVAL '9 days', CURRENT_TIMESTAMP - INTERVAL '9 days' + INTERVAL '60 minutes', NULL, 'CONFIRMED', 760.00),
+                  (1212, 1112, 'testGenerated12@generated.com', CURRENT_TIMESTAMP - INTERVAL '8 days', CURRENT_TIMESTAMP - INTERVAL '8 days' + INTERVAL '90 minutes', NULL, 'CONFIRMED', 1770.00),
+                  (1213, 1113, 'testGenerated13@generated.com', CURRENT_TIMESTAMP - INTERVAL '7 days', CURRENT_TIMESTAMP - INTERVAL '7 days' + INTERVAL '120 minutes', NULL, 'CONFIRMED', 1580.00),
+                  (1214, 1114, 'testGenerated14@generated.com', CURRENT_TIMESTAMP - INTERVAL '6 days', CURRENT_TIMESTAMP - INTERVAL '6 days' + INTERVAL '60 minutes', NULL, 'CONFIRMED', 910.00),
+                  (1215, 1115, 'testGenerated15@generated.com', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP - INTERVAL '5 days' + INTERVAL '90 minutes', NULL, 'CONFIRMED', 975.00),
+                  (1216, 1121, 'testGenerated1@generated.com', CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '4 days' + INTERVAL '120 minutes', NULL, 'CONFIRMED', 1400.00),
+                  (1217, 1122, 'testGenerated2@generated.com', CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '3 days' + INTERVAL '60 minutes', NULL, 'CANCELLED', 880.00),
+                  (1218, 1123, 'testGenerated3@generated.com', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days' + INTERVAL '90 minutes', CURRENT_TIMESTAMP - INTERVAL '2 days' + INTERVAL '30 minutes', 'AUTO_CANCELLED', 960.00),
+                  (1219, 1124, 'testGenerated4@generated.com', CURRENT_TIMESTAMP - INTERVAL '36 hours', CURRENT_TIMESTAMP - INTERVAL '36 hours' + INTERVAL '60 minutes', NULL, 'CONFIRMED', 690.00),
+                  (1220, 1125, 'testGenerated5@generated.com', CURRENT_TIMESTAMP - INTERVAL '24 hours', CURRENT_TIMESTAMP - INTERVAL '24 hours' + INTERVAL '120 minutes', NULL, 'CONFIRMED', 1880.00),
+                  (1221, 1126, 'testGenerated6@generated.com', CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '60 minutes', CURRENT_TIMESTAMP + INTERVAL '1 day' - INTERVAL '10 minutes', 'RESERVED_PENDING_PAYMENT', 1150.00),
+                  (1222, 1127, 'testGenerated7@generated.com', CURRENT_TIMESTAMP + INTERVAL '2 days', CURRENT_TIMESTAMP + INTERVAL '2 days' + INTERVAL '90 minutes', NULL, 'CONFIRMED', 1020.00),
+                  (1223, 1128, 'testGenerated8@generated.com', CURRENT_TIMESTAMP + INTERVAL '3 days', CURRENT_TIMESTAMP + INTERVAL '3 days' + INTERVAL '120 minutes', NULL, 'CONFIRMED', 1240.00),
+                  (1224, 1129, 'testGenerated9@generated.com', CURRENT_TIMESTAMP + INTERVAL '4 days', CURRENT_TIMESTAMP + INTERVAL '4 days' + INTERVAL '60 minutes', NULL, 'CONFIRMED', 660.00),
+                  (1225, 1130, 'testGenerated10@generated.com', CURRENT_TIMESTAMP + INTERVAL '5 days', CURRENT_TIMESTAMP + INTERVAL '5 days' + INTERVAL '90 minutes', NULL, 'CONFIRMED', 1305.00),
+                  (1226, 1116, 'testGenerated11@generated.com', CURRENT_TIMESTAMP + INTERVAL '6 days', CURRENT_TIMESTAMP + INTERVAL '6 days' + INTERVAL '120 minutes', NULL, 'CONFIRMED', 1480.00),
+                  (1227, 1117, 'testGenerated12@generated.com', CURRENT_TIMESTAMP + INTERVAL '7 days', CURRENT_TIMESTAMP + INTERVAL '7 days' + INTERVAL '60 minutes', NULL, 'CONFIRMED', 905.00),
+                  (1228, 1118, 'testGenerated13@generated.com', CURRENT_TIMESTAMP + INTERVAL '8 days', CURRENT_TIMESTAMP + INTERVAL '8 days' + INTERVAL '90 minutes', NULL, 'CONFIRMED', 1065.00),
+                  (1229, 1119, 'testGenerated14@generated.com', CURRENT_TIMESTAMP + INTERVAL '9 days', CURRENT_TIMESTAMP + INTERVAL '9 days' + INTERVAL '120 minutes', NULL, 'CONFIRMED', 1660.00),
+                  (1230, 1120, 'testGenerated15@generated.com', CURRENT_TIMESTAMP + INTERVAL '10 days', CURRENT_TIMESTAMP + INTERVAL '10 days' + INTERVAL '60 minutes', CURRENT_TIMESTAMP + INTERVAL '10 days' - INTERVAL '5 minutes', 'RESERVED_PENDING_PAYMENT', 1210.00)
+              ) AS seed(id, court_id, reserved_by, start_time, end_time, expires_at, status, amount_due)
+              LEFT JOIN reservation existing
+                ON existing.id = seed.id
+              WHERE existing.id IS NULL;
+
+              INSERT INTO payment (
+                id,
+                version,
+                created_by,
+                updated_by,
+                reservation_id,
+                amount,
+                status
+              )
+              SELECT
+                seed.id,
+                0,
+                'liquibase-dev-seed',
+                'liquibase-dev-seed',
+                seed.reservation_id,
+                seed.amount,
+                seed.status
+              FROM (
+                VALUES
+                  (1301, 1201, 900.00, 'SUCCESS'),
+                  (1302, 1202, 1125.00, 'SUCCESS'),
+                  (1303, 1203, 1360.00, 'SUCCESS'),
+                  (1304, 1204, 820.00, 'SUCCESS'),
+                  (1305, 1205, 1425.00, 'SUCCESS'),
+                  (1306, 1206, 700.00, 'SUCCESS'),
+                  (1307, 1207, 2400.00, 'SUCCESS'),
+                  (1308, 1208, 1170.00, 'SUCCESS'),
+                  (1309, 1209, 920.00, 'SUCCESS'),
+                  (1310, 1210, 1440.00, 'SUCCESS'),
+                  (1311, 1211, 760.00, 'SUCCESS'),
+                  (1312, 1212, 1770.00, 'FAILED'),
+                  (1313, 1213, 1580.00, 'SUCCESS'),
+                  (1314, 1214, 910.00, 'SUCCESS'),
+                  (1315, 1215, 975.00, 'FAILED'),
+                  (1316, 1216, 1400.00, 'SUCCESS'),
+                  (1317, 1217, 880.00, 'FAILED'),
+                  (1318, 1218, 960.00, 'FAILED'),
+                  (1319, 1219, 690.00, 'SUCCESS'),
+                  (1320, 1220, 1880.00, 'SUCCESS'),
+                  (1321, 1221, 1150.00, 'PENDING'),
+                  (1322, 1222, 1020.00, 'SUCCESS'),
+                  (1323, 1223, 1240.00, 'SUCCESS'),
+                  (1324, 1224, 660.00, 'SUCCESS'),
+                  (1325, 1225, 1305.00, 'SUCCESS'),
+                  (1326, 1226, 1480.00, 'SUCCESS'),
+                  (1327, 1227, 905.00, 'SUCCESS'),
+                  (1328, 1228, 1065.00, 'FAILED'),
+                  (1329, 1229, 1660.00, 'SUCCESS'),
+                  (1330, 1230, 1210.00, 'PENDING')
+              ) AS seed(id, reservation_id, amount, status)
+              LEFT JOIN payment existing
+                ON existing.id = seed.id
+              WHERE existing.id IS NULL;
+
+              SELECT setval('users_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM users), 1000));
+              SELECT setval('court_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM court), 1100));
+              SELECT setval('reservation_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM reservation), 1200));
+              SELECT setval('payment_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM payment), 1300));

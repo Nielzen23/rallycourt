@@ -1,0 +1,193 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-seed-dev-activity-logs
+      author: neilzendetorres
+      context: dev
+      changes:
+        - insertMany:
+            collectionName: activity_logs
+            documents:
+              - |
+                {
+                  "_id": "dev-activity-1001-1",
+                  "action": "LOGIN",
+                  "status": "SUCCESS",
+                  "actor": "1001",
+                  "createdAt": { "$date": "2026-05-12T01:15:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1001-2",
+                  "action": "RESERVATION_VIEW",
+                  "status": "SUCCESS",
+                  "actor": "1001",
+                  "createdAt": { "$date": "2026-05-13T03:20:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1002-1",
+                  "action": "LOGIN",
+                  "status": "FAILED",
+                  "actor": "1002",
+                  "createdAt": { "$date": "2026-05-11T00:40:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1002-2",
+                  "action": "LOGIN",
+                  "status": "SUCCESS",
+                  "actor": "1002",
+                  "createdAt": { "$date": "2026-05-11T00:44:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1003-1",
+                  "action": "COURT_SEARCH",
+                  "status": "SUCCESS",
+                  "actor": "1003",
+                  "createdAt": { "$date": "2026-05-10T05:12:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1004-1",
+                  "action": "RESERVATION_CREATE",
+                  "status": "SUCCESS",
+                  "actor": "1004",
+                  "createdAt": { "$date": "2026-05-14T02:05:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1004-2",
+                  "action": "PAYMENT_SUBMIT",
+                  "status": "SUCCESS",
+                  "actor": "1004",
+                  "createdAt": { "$date": "2026-05-14T02:08:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1005-1",
+                  "action": "PAYMENT_SUBMIT",
+                  "status": "FAILED",
+                  "actor": "1005",
+                  "createdAt": { "$date": "2026-05-15T06:00:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1006-1",
+                  "action": "LOGIN",
+                  "status": "SUCCESS",
+                  "actor": "1006",
+                  "createdAt": { "$date": "2026-05-15T08:30:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1006-2",
+                  "action": "RESERVATION_CREATE",
+                  "status": "SUCCESS",
+                  "actor": "1006",
+                  "createdAt": { "$date": "2026-05-16T08:55:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1007-1",
+                  "action": "COURT_SEARCH",
+                  "status": "SUCCESS",
+                  "actor": "1007",
+                  "createdAt": { "$date": "2026-05-16T01:20:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1008-1",
+                  "action": "LOGIN",
+                  "status": "SUCCESS",
+                  "actor": "1008",
+                  "createdAt": { "$date": "2026-05-17T04:15:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1008-2",
+                  "action": "PAYMENT_SUBMIT",
+                  "status": "FAILED",
+                  "actor": "1008",
+                  "createdAt": { "$date": "2026-05-17T04:32:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1009-1",
+                  "action": "LOGIN",
+                  "status": "SUCCESS",
+                  "actor": "1009",
+                  "createdAt": { "$date": "2026-05-18T07:45:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1010-1",
+                  "action": "RESERVATION_CANCEL",
+                  "status": "SUCCESS",
+                  "actor": "1010",
+                  "createdAt": { "$date": "2026-05-18T09:00:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1011-1",
+                  "action": "LOGIN",
+                  "status": "FAILED",
+                  "actor": "1011",
+                  "createdAt": { "$date": "2026-05-19T02:00:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1011-2",
+                  "action": "LOGIN",
+                  "status": "SUCCESS",
+                  "actor": "1011",
+                  "createdAt": { "$date": "2026-05-19T02:03:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1012-1",
+                  "action": "COURT_SEARCH",
+                  "status": "SUCCESS",
+                  "actor": "1012",
+                  "createdAt": { "$date": "2026-05-20T05:45:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1013-1",
+                  "action": "LOGIN",
+                  "status": "SUCCESS",
+                  "actor": "1013",
+                  "createdAt": { "$date": "2026-05-21T03:17:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1014-1",
+                  "action": "RESERVATION_VIEW",
+                  "status": "SUCCESS",
+                  "actor": "1014",
+                  "createdAt": { "$date": "2026-05-22T06:25:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1016-1",
+                  "action": "COURT_MANAGEMENT_VIEW",
+                  "status": "SUCCESS",
+                  "actor": "1016",
+                  "createdAt": { "$date": "2026-05-22T08:10:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1017-1",
+                  "action": "COURT_MANAGEMENT_UPDATE",
+                  "status": "SUCCESS",
+                  "actor": "1017",
+                  "createdAt": { "$date": "2026-05-23T01:50:00Z" }
+                }
+              - |
+                {
+                  "_id": "dev-activity-1018-1",
+                  "action": "COURT_MANAGEMENT_VIEW",
+                  "status": "SUCCESS",
+                  "actor": "1018",
+                  "createdAt": { "$date": "2026-05-24T02:35:00Z" }
+                }

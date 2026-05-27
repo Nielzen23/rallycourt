@@ -15,10 +15,13 @@ export type ReservationRecord = {
   latitude: number | null
   longitude: number | null
   reservedBy: string
+  contactName: string | null
+  contactMobileNumber: string | null
   startTime: string
   endTime: string
   expiresAt: string | null
   status: string
+  paymentStatus: string | null
   amountDue: number
 }
 

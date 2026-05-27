@@ -105,6 +105,10 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'PHP' }).format(value)
 }
 
+function calculateReservationAmount(hourlyRate: number, durationMinutes: number) {
+  return (hourlyRate * durationMinutes) / 60
+}
+
 function getMinutesFromTimeText(value: string) {
   const [hourText, minuteText] = value.split(':')
   return Number(hourText) * 60 + Number(minuteText)
@@ -150,6 +154,14 @@ function ReservationForm({ initialCourtId = '', onSubmit }: ReservationFormProps
     () => courts.find((court) => `${court.id}` === courtId) ?? null,
     [courtId, courts],
   )
+
+  const computedAmountDue = useMemo(() => {
+    if (!selectedCourt || !durationMinutes) {
+      return null
+    }
+
+    return calculateReservationAmount(selectedCourt.hourlyRate, Number(durationMinutes))
+  }, [durationMinutes, selectedCourt])
 
   const computedEndTime = useMemo(() => {
     if (!startTime || !durationMinutes) {
@@ -502,7 +514,8 @@ function ReservationForm({ initialCourtId = '', onSubmit }: ReservationFormProps
           </div>
           <div className="reservation-selected-court__meta">
             <span><MapPin size={14} /> {selectedCourt.location}</span>
-            <span>Rate {formatCurrency(selectedCourt.hourlyRate)}</span>
+            <span>Hourly Rate {formatCurrency(selectedCourt.hourlyRate)}</span>
+            {computedAmountDue != null ? <span>Total {formatCurrency(computedAmountDue)}</span> : null}
             {computedEndTime ? <span><CalendarClock size={14} /> Ends {computedEndTime}</span> : null}
           </div>
         </section>

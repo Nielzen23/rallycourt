@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
       file: db/changelog/mongodb/changes/001-create-activity-log-collection.yaml
+  - include:
+      file: db/changelog/mongodb/changes/002-seed-dev-activity-logs.yaml

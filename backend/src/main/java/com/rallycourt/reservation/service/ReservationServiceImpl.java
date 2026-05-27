@@ -1,6 +1,8 @@
 package com.rallycourt.reservation.service;
 
 import com.rallycourt.activity.service.ActivityLogService;
+import com.rallycourt.auth.entity.User;
+import com.rallycourt.auth.repository.UserRepository;
 import com.rallycourt.court.entity.Court;
 import com.rallycourt.court.repository.CourtRepository;
 import com.rallycourt.payment.entity.Payment;
@@ -18,6 +20,8 @@ import com.rallycourt.reservation.exception.ReservationConflictException;
 import com.rallycourt.reservation.exception.ReservationNotFoundException;
 import com.rallycourt.reservation.exception.ReservationValidationException;
 import com.rallycourt.reservation.repository.ReservationRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +54,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final CourtRepository courtRepository;
     private final PaymentRepository paymentRepository;
+    private final UserRepository userRepository;
     private final ActivityLogService activityLogService;
     private final ReservationProperties reservationProperties;
 
@@ -87,7 +92,7 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setEndTime(endTime);
         reservation.setExpiresAt(LocalDateTime.now().plusMinutes(5));
         reservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
-        reservation.setAmountDue(court.getHourlyRate());
+        reservation.setAmountDue(calculateAmountDue(court, request.getDurationMinutes()));
         LOGGER.info("Reservation prepared for user {} with pending-payment status", currentUsername);
         return reservationRepository.save(reservation);
     }
@@ -143,15 +148,34 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     private ReservationPageResponse mapReservationPage(Page<Reservation> reservations) {
+        Map<Long, Payment> paymentsByReservationId = paymentRepository.findByReservationIdIn(
+                        reservations.getContent().stream().map(Reservation::getId).toList()
+                ).stream()
+                .collect(Collectors.toMap(
+                        Payment::getReservationId,
+                        Function.identity(),
+                        (current, ignored) -> current,
+                        HashMap::new
+                ));
         Map<Long, Court> courtsById = courtRepository.findAllById(
                         reservations.getContent().stream().map(Reservation::getCourtId).toList()
                 ).stream()
                 .collect(Collectors.toMap(Court::getId, Function.identity()));
+        Map<String, User> usersByEmail = userRepository.findByEmailIn(
+                        reservations.getContent().stream()
+                                .map(Reservation::getReservedBy)
+                                .filter(email -> email != null && !email.isBlank())
+                                .distinct()
+                                .toList()
+                ).stream()
+                .collect(Collectors.toMap(User::getEmail, Function.identity()));
         return new ReservationPageResponse(
                 reservations.getContent().stream()
                         .map(reservation -> mapReservationSummary(
                                 reservation,
-                                courtsById.get(reservation.getCourtId())
+                                courtsById.get(reservation.getCourtId()),
+                                usersByEmail.get(reservation.getReservedBy()),
+                                paymentsByReservationId.get(reservation.getId())
                         ))
                         .toList(),
                 reservations.getNumber(),
@@ -226,6 +250,16 @@ public class ReservationServiceImpl implements ReservationService {
         }
     }
 
+    private BigDecimal calculateAmountDue(Court court, Integer durationMinutes) {
+        if (court.getHourlyRate() == null) {
+            throw new ReservationValidationException("Court hourly rate is not configured");
+        }
+
+        return court.getHourlyRate()
+                .multiply(BigDecimal.valueOf(durationMinutes.longValue()))
+                .divide(BigDecimal.valueOf(60L), 2, RoundingMode.HALF_UP);
+    }
+
     private CourtAvailabilityResponse mapAvailability(Reservation reservation, Payment payment) {
         if (reservation.getStatus() == ReservationStatus.CONFIRMED && payment != null && payment.getStatus() == PaymentStatus.SUCCESS) {
             return new CourtAvailabilityResponse(
@@ -248,7 +282,7 @@ public class ReservationServiceImpl implements ReservationService {
         );
     }
 
-    private ReservationSummaryResponse mapReservationSummary(Reservation reservation, Court court) {
+    private ReservationSummaryResponse mapReservationSummary(Reservation reservation, Court court, User user, Payment payment) {
         return new ReservationSummaryResponse(
                 reservation.getId(),
                 reservation.getCourtId(),
@@ -258,12 +292,35 @@ public class ReservationServiceImpl implements ReservationService {
                 court != null ? court.getLatitude() : null,
                 court != null ? court.getLongitude() : null,
                 reservation.getReservedBy(),
+                formatContactName(user, reservation.getReservedBy()),
+                user != null ? user.getMobileNumber() : null,
                 reservation.getStartTime(),
                 reservation.getEndTime(),
                 reservation.getExpiresAt(),
                 reservation.getStatus().name(),
+                payment != null ? payment.getStatus().name() : null,
                 reservation.getAmountDue()
         );
+    }
+
+    private String formatContactName(User user, String fallback) {
+        if (user == null) {
+            return fallback;
+        }
+
+        String lastName = user.getLastName() != null ? user.getLastName().trim() : "";
+        String firstName = user.getFirstName() != null ? user.getFirstName().trim() : "";
+
+        if (!lastName.isEmpty() && !firstName.isEmpty()) {
+            return lastName + ", " + firstName;
+        }
+        if (!lastName.isEmpty()) {
+            return lastName;
+        }
+        if (!firstName.isEmpty()) {
+            return firstName;
+        }
+        return fallback;
     }
 
     private String getCurrentUsername() {

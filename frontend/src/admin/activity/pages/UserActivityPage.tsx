@@ -13,6 +13,7 @@ import type { ApiErrorResponse } from '../../../types/api'
 import './UserActivityPage.css'
 
 const historyPageSize = 10
+const userSummaryPageSize = 10
 
 function formatName(user: AdminUserActivitySummary) {
   const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
@@ -37,6 +38,7 @@ function UserActivityPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [selectedUser, setSelectedUser] = useState<AdminUserActivitySummary | null>(null)
+  const [summaryPage, setSummaryPage] = useState(0)
   const [historyPage, setHistoryPage] = useState(0)
   const [historyData, setHistoryData] = useState<AdminActivityHistoryPageResponse | null>(null)
   const [isHistoryLoading, setIsHistoryLoading] = useState(false)
@@ -52,6 +54,12 @@ function UserActivityPage() {
       }),
     [users],
   )
+
+  const summaryTotalPages = Math.max(1, Math.ceil(sortedUsers.length / userSummaryPageSize))
+  const paginatedUsers = useMemo(() => {
+    const startIndex = summaryPage * userSummaryPageSize
+    return sortedUsers.slice(startIndex, startIndex + userSummaryPageSize)
+  }, [sortedUsers, summaryPage])
 
   const loadUsers = async () => {
     setIsLoading(true)
@@ -74,6 +82,14 @@ function UserActivityPage() {
   useEffect(() => {
     void loadUsers()
   }, [])
+
+  useEffect(() => {
+    setSummaryPage(0)
+  }, [users.length])
+
+  useEffect(() => {
+    setSummaryPage((current) => Math.min(current, Math.max(summaryTotalPages - 1, 0)))
+  }, [summaryTotalPages])
 
   useEffect(() => {
     if (!selectedUser) {
@@ -147,62 +163,87 @@ function UserActivityPage() {
           {isLoading ? <p className="user-activity-feedback">Loading user activity...</p> : null}
 
           {!isLoading ? (
-            <div className="user-activity-table-wrap app-table-wrap">
-              <table className="user-activity-table app-table">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Role</th>
-                    <th>Last Activity</th>
-                    <th>Last Action</th>
-                    <th>Booking Success Ratio</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedUsers.map((user) => (
-                    <tr key={user.userId} className="user-activity-row">
-                      <td>
-                        <button
-                          className="user-activity-row-button"
-                          type="button"
-                          onClick={() => openUserHistory(user)}
-                        >
-                          <span className="user-activity-user">
-                            <strong>{formatName(user)}</strong>
-                            <span>{user.email}</span>
-                          </span>
-                        </button>
-                      </td>
-                      <td>{user.role}</td>
-                      <td>{formatDateTime(user.lastActivityAt)}</td>
-                      <td>{user.lastActivityAction ?? 'No recorded activity'}</td>
-                      <td>
-                        <div className="user-activity-ratio">
-                          <div
-                            className="user-activity-ratio__bar"
-                            style={ratioBarStyle(user.successRatioPercentage)}
-                            aria-label={`Success ratio ${user.successRatioPercentage}%`}
-                          />
-                          <div className="user-activity-ratio__meta">
-                            <span>{user.successRatioPercentage}% success</span>
-                            <span>
-                              {user.successfulBookings} success / {user.failedBookings} failed
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {sortedUsers.length === 0 ? (
+            <>
+              <div className="user-activity-table-wrap app-table-wrap">
+                <table className="user-activity-table app-table">
+                  <thead>
                     <tr>
-                      <td colSpan={5}>
-                        <p className="user-activity-feedback">No users found.</p>
-                      </td>
+                      <th>User</th>
+                      <th>Role</th>
+                      <th>Last Activity</th>
+                      <th>Last Action</th>
+                      <th>Booking Success Ratio</th>
                     </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {paginatedUsers.map((user) => (
+                      <tr key={user.userId} className="user-activity-row">
+                        <td>
+                          <button
+                            className="user-activity-row-button"
+                            type="button"
+                            onClick={() => openUserHistory(user)}
+                          >
+                            <span className="user-activity-user">
+                              <strong>{formatName(user)}</strong>
+                              <span>{user.email}</span>
+                            </span>
+                          </button>
+                        </td>
+                        <td>{user.role}</td>
+                        <td>{formatDateTime(user.lastActivityAt)}</td>
+                        <td>{user.lastActivityAction ?? 'No recorded activity'}</td>
+                        <td>
+                          <div className="user-activity-ratio">
+                            <div
+                              className="user-activity-ratio__bar"
+                              style={ratioBarStyle(user.successRatioPercentage)}
+                              aria-label={`Success ratio ${user.successRatioPercentage}%`}
+                            />
+                            <div className="user-activity-ratio__meta">
+                              <span>{user.successRatioPercentage}% success</span>
+                              <span>
+                                {user.successfulBookings} success / {user.failedBookings} failed
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {sortedUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={5}>
+                          <p className="user-activity-feedback">No users found.</p>
+                        </td>
+                      </tr>
+                    ) : null}
+                  </tbody>
+                </table>
+              </div>
+              <div className="user-activity-list-pagination" aria-label="User activity pagination">
+                <span className="user-activity-muted">
+                  {sortedUsers.length} users | Page {summaryPage + 1} of {summaryTotalPages}
+                </span>
+                <div className="user-activity-modal__pager">
+                  <button
+                    className="app-button-secondary"
+                    type="button"
+                    disabled={summaryPage === 0}
+                    onClick={() => setSummaryPage((current) => Math.max(0, current - 1))}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="app-button-secondary"
+                    type="button"
+                    disabled={summaryPage >= summaryTotalPages - 1}
+                    onClick={() => setSummaryPage((current) => current + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
           ) : null}
         </div>
       </section>

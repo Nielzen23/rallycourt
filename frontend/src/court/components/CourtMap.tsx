@@ -51,13 +51,15 @@ function CourtMap({ courts, selectedCourtId, onSelectCourt, onReserve }: CourtMa
                 <div className="court-map__popup">
                   <strong>{court.name}</strong>
                   <span>{court.location}</span>
-                  <button
-                    className="court-map__popup-button"
-                    type="button"
-                    onClick={() => onReserve?.(court)}
-                  >
-                    Reserve
-                  </button>
+                  {onReserve ? (
+                    <button
+                      className="court-map__popup-button"
+                      type="button"
+                      onClick={() => onReserve(court)}
+                    >
+                      Reserve
+                    </button>
+                  ) : null}
                 </div>
               </Popup>
             </CircleMarker>

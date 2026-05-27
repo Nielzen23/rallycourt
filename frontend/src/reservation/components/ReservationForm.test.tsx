@@ -25,7 +25,16 @@ describe('ReservationForm', () => {
     })
     fetchCourts.mockResolvedValue({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })
     fetchCourtAvailability.mockResolvedValue([])
-    createReservation.mockResolvedValue({})
+    createReservation.mockResolvedValue({
+      id: 1,
+      courtId: 1,
+      reservedBy: 'testGenerated1@generated.com',
+      startTime: '2026-06-01T13:00:00',
+      endTime: '2026-06-01T14:30:00',
+      expiresAt: null,
+      status: 'RESERVED_PENDING_PAYMENT',
+      amountDue: 1125,
+    })
   })
 
   it('disables court dropdown until filters are selected', () => {
@@ -37,7 +46,7 @@ describe('ReservationForm', () => {
   it('fetches courts after selecting court type and venue type', async () => {
     fetchCourts.mockResolvedValue({
       content: [
-        { id: 1, name: 'Center Court', location: 'Makati', status: 'AVAILABLE' },
+        { id: 1, name: 'Center Court', location: 'Makati', status: 'AVAILABLE', hourlyRate: 750 },
       ],
       page: 0,
       size: 20,
@@ -64,7 +73,7 @@ describe('ReservationForm', () => {
   it('applies datetime min and max constraints', () => {
     render(<ReservationForm />)
 
-    const input = screen.getByLabelText(/start time/i)
+    const input = screen.getByLabelText(/start date/i)
     expect(input).toHaveAttribute('min')
     expect(input).toHaveAttribute('max')
   })
@@ -83,6 +92,7 @@ describe('ReservationForm', () => {
           status: 'AVAILABLE',
           openTime: '08:00:00',
           closeTime: '22:00:00',
+          hourlyRate: 750,
         },
       ],
       page: 0,
@@ -109,7 +119,8 @@ describe('ReservationForm', () => {
     await waitFor(() => expect(fetchCourts).toHaveBeenCalled())
 
     fireEvent.change(screen.getByLabelText(/court$/i), { target: { value: '1' } })
-    fireEvent.change(screen.getByLabelText(/start time/i), { target: { value: '2026-06-01T10:30' } })
+    fireEvent.change(screen.getByLabelText(/start date/i), { target: { value: '2026-06-01' } })
+    fireEvent.change(screen.getByLabelText(/^start time$/i), { target: { value: '10:30' } })
     fireEvent.change(screen.getByLabelText(/duration/i), { target: { value: '60' } })
 
     expect(await screen.findByText('Booking Pending')).toBeInTheDocument()
@@ -131,6 +142,7 @@ describe('ReservationForm', () => {
           status: 'AVAILABLE',
           openTime: '08:00:00',
           closeTime: '22:00:00',
+          hourlyRate: 750,
         },
       ],
       page: 0,
@@ -146,7 +158,8 @@ describe('ReservationForm', () => {
     await waitFor(() => expect(fetchCourts).toHaveBeenCalled())
 
     fireEvent.change(screen.getByLabelText(/court$/i), { target: { value: '1' } })
-    fireEvent.change(screen.getByLabelText(/start time/i), { target: { value: '2026-06-01T13:00' } })
+    fireEvent.change(screen.getByLabelText(/start date/i), { target: { value: '2026-06-01' } })
+    fireEvent.change(screen.getByLabelText(/^start time$/i), { target: { value: '13:00' } })
     fireEvent.change(screen.getByLabelText(/duration/i), { target: { value: '90' } })
     fireEvent.click(screen.getByRole('button', { name: /create reservation/i }))
 
@@ -157,10 +170,62 @@ describe('ReservationForm', () => {
         durationMinutes: 90,
       })
       expect(onSubmit).toHaveBeenCalledWith({
-        courtId: 1,
-        startTime: '2026-06-01T13:00:00',
-        durationMinutes: 90,
+        payload: {
+          courtId: 1,
+          startTime: '2026-06-01T13:00:00',
+          durationMinutes: 90,
+        },
+        reservation: {
+          id: 1,
+          courtId: 1,
+          reservedBy: 'testGenerated1@generated.com',
+          startTime: '2026-06-01T13:00:00',
+          endTime: '2026-06-01T14:30:00',
+          expiresAt: null,
+          status: 'RESERVED_PENDING_PAYMENT',
+          amountDue: 1125,
+        },
       })
     })
+  })
+
+  it('renders total booking amount based on selected duration', async () => {
+    fetchCourts.mockResolvedValue({
+      content: [
+        {
+          id: 1,
+          name: 'Center Court',
+          location: 'Makati',
+          latitude: 0,
+          longitude: 0,
+          courtType: 'BADMINTON',
+          venueType: 'INDOOR',
+          status: 'AVAILABLE',
+          openTime: '08:00:00',
+          closeTime: '22:00:00',
+          hourlyRate: 750,
+        },
+      ],
+      page: 0,
+      size: 20,
+      totalElements: 1,
+      totalPages: 1,
+    })
+
+    render(<ReservationForm />)
+
+    fireEvent.change(screen.getByLabelText(/court type/i), { target: { value: 'BADMINTON' } })
+    fireEvent.change(screen.getByLabelText(/venue type/i), { target: { value: 'INDOOR' } })
+    await waitFor(() => expect(fetchCourts).toHaveBeenCalled())
+
+    fireEvent.change(screen.getByLabelText(/court$/i), { target: { value: '1' } })
+
+    expect(screen.getByText(/Hourly Rate/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Total/i)).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/duration/i), { target: { value: '90' } })
+
+    expect(screen.getByText(/Total/i)).toBeInTheDocument()
+    expect(screen.getByText(/1,125\.00/)).toBeInTheDocument()
   })
 })

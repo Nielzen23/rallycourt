@@ -37,12 +37,10 @@ function AppLayout() {
   const displayName = profile.firstName || profile.email
   const role = getStoredRole()
   const isAdmin = role === 'ADMIN'
-  const activeSection =
-    location.pathname === '/court-management'
-      ? 'Court Management'
-      : location.pathname === '/user-activity'
-        ? 'User Activity'
-        : 'Dashboard'
+  const isCourtManagementActive = location.pathname === '/court-management'
+  const isUserActivityActive = location.pathname === '/user-activity'
+  const secondaryNavLinkClassName =
+    'inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-medium transition'
 
   const handleSignOut = () => {
     clearAuthSession()
@@ -108,35 +106,34 @@ function AppLayout() {
               {isAdmin ? (
                 <>
                   <Link
-                    className={`${headerIconButtonClassName} ${
-                      location.pathname === '/court-management'
+                    className={`${secondaryNavLinkClassName} ${
+                      isCourtManagementActive
                         ? headerIconButtonActiveClassName
-                        : ''
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900'
                     }`}
                     to="/court-management"
                     aria-label="Courts tab"
                     title="Courts"
                   >
                     <Building2 size={18} />
+                    <span>Court Management</span>
                   </Link>
                   <Link
-                    className={`${headerIconButtonClassName} ${
-                      location.pathname === '/user-activity'
+                    className={`${secondaryNavLinkClassName} ${
+                      isUserActivityActive
                         ? headerIconButtonActiveClassName
-                        : ''
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900'
                     }`}
                     to="/user-activity"
                     aria-label="User activity tab"
                     title="User activity"
                   >
                     <Activity size={18} />
+                    <span>User Activity</span>
                   </Link>
                 </>
               ) : null}
             </nav>
-            {location.pathname === '/court-management' || location.pathname === '/user-activity' ? (
-              <span className="text-right text-[0.95rem] font-semibold text-slate-900">{activeSection}</span>
-            ) : null}
           </div>
           <div className="hidden w-full items-center justify-end gap-2.5 lg:flex lg:w-auto lg:min-w-[220px]">
             <button
@@ -183,10 +180,10 @@ function AppLayout() {
                   {isAdmin ? (
                     <>
                       <Link
-                        className={`${headerIconButtonClassName} ${
-                          location.pathname === '/court-management'
+                        className={`${secondaryNavLinkClassName} ${
+                          isCourtManagementActive
                             ? headerIconButtonActiveClassName
-                            : ''
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900'
                         }`}
                         to="/court-management"
                         aria-label="Courts tab"
@@ -194,12 +191,13 @@ function AppLayout() {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <Building2 size={18} />
+                        <span>Court Management</span>
                       </Link>
                       <Link
-                        className={`${headerIconButtonClassName} ${
-                          location.pathname === '/user-activity'
+                        className={`${secondaryNavLinkClassName} ${
+                          isUserActivityActive
                             ? headerIconButtonActiveClassName
-                            : ''
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900'
                         }`}
                         to="/user-activity"
                         aria-label="User activity tab"
@@ -207,13 +205,11 @@ function AppLayout() {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <Activity size={18} />
+                        <span>User Activity</span>
                       </Link>
                     </>
                   ) : null}
                 </nav>
-                {location.pathname === '/court-management' || location.pathname === '/user-activity' ? (
-                  <span className="text-right text-[0.95rem] font-semibold text-slate-900">{activeSection}</span>
-                ) : null}
               </div>
               <div className="flex items-center justify-between gap-2.5">
                 <button

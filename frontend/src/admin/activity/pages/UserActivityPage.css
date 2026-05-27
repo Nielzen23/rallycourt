@@ -172,6 +172,13 @@
   align-items: center;
 }
 
+.user-activity-list-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .user-activity-modal__pager {
   display: flex;
   align-items: center;
@@ -187,6 +194,7 @@
   .user-activity-panel__header,
   .user-activity-modal__header,
   .user-activity-modal__actions,
+  .user-activity-list-pagination,
   .user-activity-history-item__top,
   .user-activity-ratio__meta {
     flex-direction: column;

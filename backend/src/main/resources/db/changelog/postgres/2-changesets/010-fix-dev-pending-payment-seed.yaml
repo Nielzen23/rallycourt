@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-fix-dev-pending-payment-seed
+      author: neilzendetorres
+      context: dev
+      changes:
+        - sql:
+            sql: |
+              DELETE FROM payment
+              WHERE status = 'PENDING';

@@ -1,5 +1,6 @@
 .admin-courts-page {
-  display: block;
+  display: grid;
+  gap: 18px;
 }
 
 .admin-courts-panel {
@@ -131,10 +132,31 @@
   background: rgba(37, 99, 235, 0.05);
 }
 
-.admin-courts-actions {
+.admin-courts-name-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-courts-name-button:hover {
+  text-decoration: underline;
+}
+
+.admin-courts-pagination {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-courts-pagination__actions {
+  display: flex;
+  gap: 10px;
 }
 
 .admin-details-stack,
@@ -169,8 +191,62 @@
   border-radius: 12px;
 }
 
+.admin-map-preview {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-map-preview__details {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.admin-map-preview__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-map-preview__header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.admin-map-preview__header span {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-map-preview__details dl {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.admin-map-preview__details dl div {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-map-preview__details dt {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.admin-map-preview__details dd {
+  margin: 0;
+}
+
 .admin-details-modal {
   width: min(100%, 960px);
+  padding: 1%
 }
 
 .admin-modal-backdrop {
@@ -185,6 +261,14 @@
 
 .admin-modal__header {
   gap: 16px;
+}
+
+.admin-modal__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .admin-modal__header span {
@@ -217,7 +301,8 @@
 
   .admin-courts-panel__header,
   .admin-modal__header,
-  .admin-modal__actions {
+  .admin-modal__actions,
+  .admin-courts-pagination {
     flex-direction: column;
   }
 
@@ -230,12 +315,20 @@
     padding: 20px 16px 16px;
   }
 
-  .admin-courts-actions {
-    min-width: 180px;
+  .admin-courts-pagination__actions {
+    width: 100%;
+  }
+
+  .admin-courts-pagination__actions button {
+    flex: 1 1 0;
+  }
+
+  .admin-modal__header-actions {
+    width: 100%;
     flex-direction: column;
   }
 
-  .admin-courts-actions button {
+  .admin-modal__header-actions button {
     width: 100%;
   }
 }
