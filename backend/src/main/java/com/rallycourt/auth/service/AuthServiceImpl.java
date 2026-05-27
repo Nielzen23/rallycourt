@@ -7,7 +7,6 @@ import com.rallycourt.auth.dto.SessionTokenRequest;
 import com.rallycourt.auth.entity.CourtOwnerStatus;
 import com.rallycourt.auth.entity.Role;
 import com.rallycourt.auth.entity.User;
-import com.rallycourt.auth.exception.SignupRateLimitExceededException;
 import com.rallycourt.auth.repository.RoleRepository;
 import com.rallycourt.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

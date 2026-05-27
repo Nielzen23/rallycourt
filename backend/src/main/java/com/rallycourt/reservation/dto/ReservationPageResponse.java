@@ -1,6 +1,5 @@
 package com.rallycourt.reservation.dto;
 
-import com.rallycourt.reservation.entity.Reservation;
 import java.util.List;
 
 public record ReservationPageResponse(
