@@ -6,6 +6,16 @@ class RallyCourtApplicationTest {
 
     @Test
     void mainStartsApplication() {
-        RallyCourtApplication.main(new String[0]);
+        String originalPort = System.getProperty("server.port");
+        try {
+            System.setProperty("server.port", "0");
+            RallyCourtApplication.main(new String[0]);
+        } finally {
+            if (originalPort == null) {
+                System.clearProperty("server.port");
+            } else {
+                System.setProperty("server.port", originalPort);
+            }
+        }
     }
 }

@@ -12,11 +12,13 @@ import static org.mockito.Mockito.when;
 import com.rallycourt.auth.dto.AuthResponse;
 import com.rallycourt.auth.dto.LoginRequest;
 import com.rallycourt.auth.dto.RegisterRequest;
+import com.rallycourt.auth.dto.SessionTokenRequest;
 import com.rallycourt.auth.entity.CourtOwnerStatus;
 import com.rallycourt.auth.entity.Role;
 import com.rallycourt.auth.entity.User;
 import com.rallycourt.auth.repository.RoleRepository;
 import com.rallycourt.auth.repository.UserRepository;
+import com.rallycourt.auth.service.SignupAttemptService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,8 +50,14 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private SignupAttemptService signupAttemptService;
+
+    @Mock
+    private SessionTokenService sessionTokenService;
+
     @InjectMocks
-    private AuthService authService;
+    private AuthServiceImpl authService;
 
     private Role playerRole;
     private User savedUser;
@@ -76,6 +84,7 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail("player@rallycourt.local")).thenReturn(Optional.of(savedUser));
         when(jwtService.generateToken(savedUser)).thenReturn("jwt-token");
+        when(sessionTokenService.issueSessionToken(savedUser)).thenReturn("session-token");
 
         AuthResponse response = authService.login(request);
 
@@ -87,6 +96,7 @@ class AuthServiceTest {
         assertEquals("secret123", token.getCredentials());
 
         assertEquals("jwt-token", response.token());
+        assertEquals("session-token", response.sessionToken());
         assertEquals("player@rallycourt.local", response.email());
         assertEquals("PLAYER", response.role());
         assertEquals("NONE", response.courtOwnerStatus());
@@ -125,8 +135,10 @@ class AuthServiceTest {
                 () -> authService.register(request)
         );
 
-        assertEquals("Email already exists", exception.getMessage());
+        assertEquals("Unable to create account with this email", exception.getMessage());
         verify(userRepository, never()).save(any(User.class));
+        verify(signupAttemptService).checkAllowed("player@rallycourt.local");
+        verify(signupAttemptService).recordAttempt("player@rallycourt.local");
     }
 
     @Test
@@ -148,6 +160,7 @@ class AuthServiceTest {
         );
 
         assertEquals("PLAYER role is not configured", exception.getMessage());
+        verify(signupAttemptService).checkAllowed("player@rallycourt.local");
     }
 
     @Test
@@ -165,6 +178,7 @@ class AuthServiceTest {
         when(passwordEncoder.encode("secret123")).thenReturn("encoded-password");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(jwtService.generateToken(any(User.class))).thenReturn("generated-token");
+        when(sessionTokenService.issueSessionToken(any(User.class))).thenReturn("session-token");
 
         AuthResponse response = authService.register(request);
 
@@ -182,6 +196,7 @@ class AuthServiceTest {
 
         assertNotNull(response);
         assertEquals("generated-token", response.token());
+        assertEquals("session-token", response.sessionToken());
         assertEquals("player@rallycourt.local", response.email());
         assertEquals("Player", response.firstName());
         assertEquals("One", response.lastName());
@@ -191,5 +206,20 @@ class AuthServiceTest {
         verify(roleRepository).findByCode("PLAYER");
         verify(userRepository).findByEmail("player@rallycourt.local");
         verify(passwordEncoder).encode(eq("secret123"));
+        verify(signupAttemptService).checkAllowed("player@rallycourt.local");
+        verify(signupAttemptService).clearAttempts("player@rallycourt.local");
+    }
+
+    @Test
+    void refreshReturnsRotatedTokensForValidSessionToken() {
+        when(sessionTokenService.validateSessionToken("session-token")).thenReturn(savedUser);
+        when(jwtService.generateToken(savedUser)).thenReturn("jwt-token");
+        when(sessionTokenService.issueSessionToken(savedUser)).thenReturn("new-session-token");
+
+        AuthResponse response = authService.refresh(new SessionTokenRequest("session-token"));
+
+        assertEquals("jwt-token", response.token());
+        assertEquals("new-session-token", response.sessionToken());
+        assertEquals(savedUser.getEmail(), response.email());
     }
 }

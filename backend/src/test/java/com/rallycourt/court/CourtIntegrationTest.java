@@ -14,6 +14,7 @@ import com.rallycourt.auth.repository.RoleRepository;
 import com.rallycourt.auth.repository.UserRepository;
 import com.rallycourt.auth.service.JwtService;
 import com.rallycourt.court.entity.Court;
+import com.rallycourt.court.entity.CourtStatus;
 import com.rallycourt.court.entity.CourtType;
 import com.rallycourt.court.entity.VenueType;
 import com.rallycourt.court.repository.CourtRepository;
@@ -81,6 +82,7 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
         firstCourt.setLongitude(121.0244);
         firstCourt.setCourtType(courtType("BASKETBALL"));
         firstCourt.setVenueType(venueType("INDOOR"));
+        firstCourt.setStatus(CourtStatus.AVAILABLE);
         firstCourt.setOpenTime(LocalTime.of(8, 0));
         firstCourt.setCloseTime(LocalTime.of(22, 0));
         firstCourt.setOwner(adminUser);
@@ -93,6 +95,7 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
         secondCourt.setLongitude(121.0437);
         secondCourt.setCourtType(courtType("PICKLEBALL"));
         secondCourt.setVenueType(venueType("OUTDOOR"));
+        secondCourt.setStatus(CourtStatus.UNAVAILABLE);
         secondCourt.setOpenTime(LocalTime.of(8, 0));
         secondCourt.setCloseTime(LocalTime.of(22, 0));
         secondCourt.setOwner(adminUser);
@@ -108,10 +111,88 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.content[0].longitude").value(121.0244))
                 .andExpect(jsonPath("$.content[0].courtType").value("BASKETBALL"))
                 .andExpect(jsonPath("$.content[0].venueType").value("INDOOR"))
+                .andExpect(jsonPath("$.content[0].status").value("AVAILABLE"))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(1))
                 .andExpect(jsonPath("$.totalElements").value(2))
                 .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    void getCourtsSupportsFilteringByCourtTypeVenueTypeAndStatus() throws Exception {
+        Court firstCourt = new Court();
+        firstCourt.setName("Center Court");
+        firstCourt.setLocation("Makati City");
+        firstCourt.setLatitude(14.5547);
+        firstCourt.setLongitude(121.0244);
+        firstCourt.setCourtType(courtType("BADMINTON"));
+        firstCourt.setVenueType(venueType("INDOOR"));
+        firstCourt.setStatus(CourtStatus.AVAILABLE);
+        firstCourt.setOpenTime(LocalTime.of(8, 0));
+        firstCourt.setCloseTime(LocalTime.of(22, 0));
+        firstCourt.setOwner(adminUser);
+        courtRepository.save(firstCourt);
+
+        Court secondCourt = new Court();
+        secondCourt.setName("North Court");
+        secondCourt.setLocation("Quezon City");
+        secondCourt.setLatitude(14.6760);
+        secondCourt.setLongitude(121.0437);
+        secondCourt.setCourtType(courtType("BADMINTON"));
+        secondCourt.setVenueType(venueType("OUTDOOR"));
+        secondCourt.setStatus(CourtStatus.AVAILABLE);
+        secondCourt.setOpenTime(LocalTime.of(8, 0));
+        secondCourt.setCloseTime(LocalTime.of(22, 0));
+        secondCourt.setOwner(adminUser);
+        courtRepository.save(secondCourt);
+
+        Court thirdCourt = new Court();
+        thirdCourt.setName("South Court");
+        thirdCourt.setLocation("Pasig City");
+        thirdCourt.setLatitude(14.5764);
+        thirdCourt.setLongitude(121.0851);
+        thirdCourt.setCourtType(courtType("PICKLEBALL"));
+        thirdCourt.setVenueType(venueType("INDOOR"));
+        thirdCourt.setStatus(CourtStatus.UNAVAILABLE);
+        thirdCourt.setOpenTime(LocalTime.of(8, 0));
+        thirdCourt.setCloseTime(LocalTime.of(22, 0));
+        thirdCourt.setOwner(adminUser);
+        courtRepository.save(thirdCourt);
+
+        mockMvc.perform(get("/api/courts")
+                        .param("courtType", "BADMINTON")
+                        .param("venueType", "INDOOR")
+                        .param("status", "AVAILABLE")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].name").value("Center Court"));
+    }
+
+    @Test
+    void getCourtsRejectsInvalidFilterValues() throws Exception {
+        mockMvc.perform(get("/api/courts")
+                        .param("courtType", "TENNIS")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/api/courts")
+                        .param("venueType", "ROOFED")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/api/courts")
+                        .param("status", "MAINTENANCE")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -121,6 +202,75 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                         .param("size", "51")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void courtManagementEndpointsRejectNonManagerUsers() throws Exception {
+        mockMvc.perform(post("/api/court-management/courts")
+                        .header("Authorization", "Bearer " + playerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Rally Court QC",
+                                  "location": "Quezon City",
+                                  "courtType": "BADMINTON",
+                                  "venueType": "INDOOR",
+                                  "status": "AVAILABLE",
+                                  "hourlyRate": 750
+                                }
+                                """))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCanCreateAndViewCourtManagementDetails() throws Exception {
+        mockMvc.perform(post("/api/court-management/courts")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Rally Court QC",
+                                  "location": "Quezon City",
+                                  "courtType": "BADMINTON",
+                                  "venueType": "INDOOR",
+                                  "status": "AVAILABLE",
+                                  "hourlyRate": 750
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Rally Court QC"))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"));
+
+        Court createdCourt = courtRepository.findAll().stream()
+                .filter(court -> "Rally Court QC".equals(court.getName()))
+                .findFirst()
+                .orElseThrow();
+
+        mockMvc.perform(get("/api/court-management/courts/{courtId}", createdCourt.getId())
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Rally Court QC"))
+                .andExpect(jsonPath("$.courtType").value("BADMINTON"))
+                .andExpect(jsonPath("$.upcomingReservations").isArray());
+    }
+
+    @Test
+    void courtOwnerCanAccessCourtManagementEndpoints() throws Exception {
+        mockMvc.perform(post("/api/court-management/courts")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Owner Managed Court",
+                                  "location": "Makati City",
+                                  "courtType": "BADMINTON",
+                                  "venueType": "INDOOR",
+                                  "status": "AVAILABLE",
+                                  "hourlyRate": 750
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Owner Managed Court"));
     }
 
     @Test
@@ -135,7 +285,8 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                                   "courtType": "BASKETBALL",
                                   "venueType": "OUTDOOR",
                                   "openTime": "08:00:00",
-                                  "closeTime": "22:00:00"
+                                  "closeTime": "22:00:00",
+                                  "hourlyRate": 750
                                 }
                                 """))
                 .andExpect(status().isCreated())
@@ -145,6 +296,7 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.closeTime").value("22:00:00"))
                 .andExpect(jsonPath("$.courtType").value("BASKETBALL"))
                 .andExpect(jsonPath("$.venueType").value("OUTDOOR"))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"))
                 .andExpect(jsonPath("$.latitude").value(14.5507))
                 .andExpect(jsonPath("$.longitude").value(121.0505));
     }
@@ -161,7 +313,8 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                                   "courtType": "BASKETBALL",
                                   "venueType": "INDOOR",
                                   "openTime": "08:00:00",
-                                  "closeTime": "22:00:00"
+                                  "closeTime": "22:00:00",
+                                  "hourlyRate": 750
                                 }
                                 """))
                 .andExpect(status().isForbidden());
@@ -197,7 +350,8 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                                   "courtType": "FUTSAL",
                                   "venueType": "OUTDOOR",
                                   "openTime": "08:00:00",
-                                  "closeTime": "22:00:00"
+                                  "closeTime": "22:00:00",
+                                  "hourlyRate": 750
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
@@ -213,6 +367,7 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
         court.setLongitude(121.0505);
         court.setCourtType(courtType("BASKETBALL"));
         court.setVenueType(venueType("OUTDOOR"));
+        court.setStatus(CourtStatus.AVAILABLE);
         court.setOpenTime(LocalTime.of(8, 0));
         court.setCloseTime(LocalTime.of(22, 0));
         court.setOwner(ownerUser);
@@ -228,7 +383,8 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                                   "courtType": "PICKLEBALL",
                                   "venueType": "INDOOR",
                                   "openTime": "09:00:00",
-                                  "closeTime": "21:00:00"
+                                  "closeTime": "21:00:00",
+                                  "hourlyRate": 750
                                 }
                                 """))
                 .andExpect(status().isOk())
@@ -250,6 +406,7 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
         court.setLongitude(121.0505);
         court.setCourtType(courtType("BASKETBALL"));
         court.setVenueType(venueType("INDOOR"));
+        court.setStatus(CourtStatus.AVAILABLE);
         court.setOpenTime(LocalTime.of(8, 0));
         court.setCloseTime(LocalTime.of(22, 0));
         court.setOwner(ownerUser);
@@ -265,7 +422,8 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                                   "courtType": "BADMINTON",
                                   "venueType": "INDOOR",
                                   "openTime": "08:30:00",
-                                  "closeTime": "21:30:00"
+                                  "closeTime": "21:30:00",
+                                  "hourlyRate": 750
                                 }
                                 """))
                 .andExpect(status().isOk())
@@ -287,6 +445,7 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
         court.setLongitude(121.0437);
         court.setCourtType(courtType("BASKETBALL"));
         court.setVenueType(venueType("OUTDOOR"));
+        court.setStatus(CourtStatus.AVAILABLE);
         court.setOpenTime(LocalTime.of(8, 0));
         court.setCloseTime(LocalTime.of(22, 0));
         court.setOwner(ownerUser);
@@ -302,7 +461,8 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                                   "courtType": "BASKETBALL",
                                   "venueType": "INDOOR",
                                   "openTime": "08:00:00",
-                                  "closeTime": "22:00:00"
+                                  "closeTime": "22:00:00",
+                                  "hourlyRate": 750
                                 }
                                 """))
                 .andExpect(status().isOk())
@@ -318,6 +478,7 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
         court.setLongitude(121.0437);
         court.setCourtType(courtType("BASKETBALL"));
         court.setVenueType(venueType("OUTDOOR"));
+        court.setStatus(CourtStatus.AVAILABLE);
         court.setOpenTime(LocalTime.of(8, 0));
         court.setCloseTime(LocalTime.of(22, 0));
         court.setOwner(ownerUser);
@@ -333,7 +494,8 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
                                   "courtType": "BASKETBALL",
                                   "venueType": "INDOOR",
                                   "openTime": "08:00:00",
-                                  "closeTime": "22:00:00"
+                                  "closeTime": "22:00:00",
+                                  "hourlyRate": 750
                                 }
                                 """))
                 .andExpect(status().isForbidden());

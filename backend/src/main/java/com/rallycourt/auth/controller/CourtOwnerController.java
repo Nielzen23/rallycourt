@@ -4,6 +4,8 @@ import com.rallycourt.activity.annotation.ActivityLogAnnotation;
 import com.rallycourt.auth.entity.User;
 import com.rallycourt.auth.service.CourtOwnerService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 public class CourtOwnerController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtOwnerController.class);
 
     private final CourtOwnerService courtOwnerService;
 
@@ -22,6 +25,7 @@ public class CourtOwnerController {
     @PreAuthorize("hasRole('PLAYER')")
     @ActivityLogAnnotation("COURT_OWNER_APPLIED")
     public ResponseEntity<User> apply() {
+        LOGGER.info("Court owner application requested");
         return ResponseEntity.ok(courtOwnerService.apply());
     }
 
@@ -29,6 +33,7 @@ public class CourtOwnerController {
     @PreAuthorize("hasRole('ADMIN')")
     @ActivityLogAnnotation("COURT_OWNER_APPROVED")
     public ResponseEntity<User> approve(@PathVariable Long userId) {
+        LOGGER.info("Court owner approval requested for userId {}", userId);
         return ResponseEntity.ok(courtOwnerService.approve(userId));
     }
 
@@ -36,6 +41,7 @@ public class CourtOwnerController {
     @PreAuthorize("hasRole('ADMIN')")
     @ActivityLogAnnotation("COURT_OWNER_REJECTED")
     public ResponseEntity<User> reject(@PathVariable Long userId) {
+        LOGGER.info("Court owner rejection requested for userId {}", userId);
         return ResponseEntity.ok(courtOwnerService.reject(userId));
     }
 }

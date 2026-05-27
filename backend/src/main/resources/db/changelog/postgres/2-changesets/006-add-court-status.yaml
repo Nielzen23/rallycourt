@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-add-court-status
+      author: neilzendetorres
+      changes:
+        - addColumn:
+            tableName: court
+            columns:
+              - column:
+                  name: status
+                  type: VARCHAR(50)
+                  defaultValue: AVAILABLE
+                  constraints:
+                    nullable: false

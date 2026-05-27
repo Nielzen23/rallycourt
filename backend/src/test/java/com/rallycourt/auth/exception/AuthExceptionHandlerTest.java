@@ -35,6 +35,17 @@ class AuthExceptionHandlerTest {
     }
 
     @Test
+    void handleSignupRateLimitReturnsTooManyRequests() {
+        ResponseEntity<Map<String, String>> response =
+                authExceptionHandler.handleSignupRateLimit(
+                        new SignupRateLimitExceededException("Unable to create account with this email")
+                );
+
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, response.getStatusCode());
+        assertEquals("Unable to create account with this email", response.getBody().get("message"));
+    }
+
+    @Test
     void handleValidationReturnsFirstFieldErrorMessage() throws Exception {
         BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "request");
         bindingResult.addError(new FieldError("request", "email", "Invalid email format"));
@@ -46,7 +57,7 @@ class AuthExceptionHandlerTest {
         ResponseEntity<Map<String, String>> response = authExceptionHandler.handleValidation(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Invalid email format", response.getBody().get("message"));
+        assertEquals("Unable to create account with this email", response.getBody().get("message"));
     }
 
     @Test
@@ -61,7 +72,7 @@ class AuthExceptionHandlerTest {
         ResponseEntity<Map<String, String>> response = authExceptionHandler.handleValidation(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Validation failed", response.getBody().get("message"));
+        assertEquals("Unable to create account with this email", response.getBody().get("message"));
     }
 
     @Test

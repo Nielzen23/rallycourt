@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-add-session-token-table
+      author: neilzendetorres
+      changes:
+        - createTable:
+            tableName: session_token
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: token
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: session_token
+            baseColumnNames: user_id
+            constraintName: fk_session_token_user
+            referencedTableName: users
+            referencedColumnNames: id
+        - createIndex:
+            tableName: session_token
+            indexName: idx_session_token_expires_at
+            columns:
+              - column:
+                  name: expires_at

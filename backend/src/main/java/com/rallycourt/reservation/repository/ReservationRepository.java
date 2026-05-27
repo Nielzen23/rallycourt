@@ -23,4 +23,22 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             LocalDateTime endTime,
             LocalDateTime startTime
     );
+
+    boolean existsByCourtIdAndStatusInAndStartTimeGreaterThan(
+            Long courtId,
+            Collection<ReservationStatus> statuses,
+            LocalDateTime startTime
+    );
+
+    List<Reservation> findByCourtIdAndStartTimeGreaterThanEqualOrderByStartTimeAsc(
+            Long courtId,
+            LocalDateTime startTime
+    );
+
+    List<Reservation> findByCourtIdAndStatusInAndStartTimeLessThanAndEndTimeGreaterThanOrderByStartTimeAsc(
+            Long courtId,
+            Collection<ReservationStatus> statuses,
+            LocalDateTime rangeEnd,
+            LocalDateTime rangeStart
+    );
 }

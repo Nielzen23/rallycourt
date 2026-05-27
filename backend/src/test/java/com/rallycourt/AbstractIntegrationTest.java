@@ -1,8 +1,10 @@
 package com.rallycourt;
 
 import com.rallycourt.activity.service.ActivityLogService;
+import com.rallycourt.court.dto.CourtAddressSuggestionResponse;
 import com.rallycourt.court.geocoding.Coordinates;
 import com.rallycourt.court.geocoding.GeocodingService;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,10 +31,7 @@ public abstract class AbstractIntegrationTest {
         @Bean
         @Primary
         ActivityLogService activityLogService() {
-            return new ActivityLogService(null) {
-                @Override
-                public void log(String action, String actor) {
-                }
+            return (action, actor) -> {
             };
         }
     }
@@ -44,6 +43,9 @@ public abstract class AbstractIntegrationTest {
         StubGeocodingService() {
             coordinatesByLocation.put("Bonifacio Global City", new Coordinates(14.5507, 121.0505));
             coordinatesByLocation.put("Ortigas Center", new Coordinates(14.5869, 121.0614));
+            coordinatesByLocation.put("Quezon City", new Coordinates(14.6760, 121.0437));
+            coordinatesByLocation.put("Makati City", new Coordinates(14.5547, 121.0244));
+            coordinatesByLocation.put("Pasig City", new Coordinates(14.5764, 121.0851));
         }
 
         @Override
@@ -53,6 +55,19 @@ public abstract class AbstractIntegrationTest {
                 throw new IllegalArgumentException("No stubbed coordinates for location: " + location);
             }
             return coordinates;
+        }
+
+        @Override
+        public List<CourtAddressSuggestionResponse> autocomplete(String query) {
+            String normalized = query == null ? "" : query.toLowerCase();
+            return coordinatesByLocation.entrySet().stream()
+                    .filter(entry -> entry.getKey().toLowerCase().contains(normalized))
+                    .map(entry -> new CourtAddressSuggestionResponse(
+                            entry.getKey(),
+                            entry.getValue().latitude(),
+                            entry.getValue().longitude()
+                    ))
+                    .toList();
         }
     }
 }

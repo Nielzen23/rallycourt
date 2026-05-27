@@ -17,7 +17,7 @@ class JwtServiceTest {
     private static final String SECRET = "VGhpc0lzQVRlc3RTZWNyZXRGb3JKV1RUaGF0SXNMb25nRW5vdWdoMTIzNDU2Nzg5MA==";
     private static final String ADMIN_EMAIL = "adminrallycourt@rallycourt.local";
 
-    private final JwtService jwtService = new JwtService(SECRET);
+    private final JwtService jwtService = new JwtServiceImpl(SECRET);
 
     @Test
     void generateTokenAndExtractUsernameReturnsSubject() {
@@ -51,7 +51,7 @@ class JwtServiceTest {
 
     @Test
     void isTokenValidReturnsFalseForExpiredToken() {
-        JwtService expiredTokenService = new JwtService(SECRET) {
+        JwtService expiredTokenService = new JwtServiceImpl(SECRET) {
             @Override
             public String generateToken(com.rallycourt.auth.entity.User user) {
                 Instant now = Instant.now();

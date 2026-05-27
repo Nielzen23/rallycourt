@@ -1,6 +1,7 @@
 package com.rallycourt.payment.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,6 +13,8 @@ import com.rallycourt.payment.dto.ProcessPaymentRequest;
 import com.rallycourt.payment.entity.Payment;
 import com.rallycourt.payment.entity.PaymentStatus;
 import com.rallycourt.payment.exception.PaymentNotAllowedException;
+import com.rallycourt.payment.gateway.PaymentGateway;
+import com.rallycourt.payment.gateway.PaymentGatewayChargeResult;
 import com.rallycourt.payment.repository.PaymentRepository;
 import com.rallycourt.reservation.entity.Reservation;
 import com.rallycourt.reservation.entity.ReservationStatus;
@@ -39,10 +42,13 @@ class PaymentServiceTest {
     private ReservationRepository reservationRepository;
 
     @Mock
+    private PaymentGateway paymentGateway;
+
+    @Mock
     private Authentication authentication;
 
     @InjectMocks
-    private PaymentService paymentService;
+    private PaymentServiceImpl paymentService;
 
     @AfterEach
     void tearDown() {
@@ -62,9 +68,10 @@ class PaymentServiceTest {
         reservation.setId(10L);
         reservation.setReservedBy("AdminRallyCourt");
         reservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
-        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
+        when(paymentGateway.charge(any())).thenReturn(new PaymentGatewayChargeResult(true, "mock-ref", "ok"));
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -101,7 +108,7 @@ class PaymentServiceTest {
 
         assertEquals("Reservation has expired", exception.getMessage());
         assertEquals(ReservationStatus.AUTO_CANCELLED, reservation.getStatus());
-        assertNull(reservation.getExpiresAt());
+        assertNotNull(reservation.getExpiresAt());
     }
 
     @Test
@@ -119,6 +126,36 @@ class PaymentServiceTest {
     }
 
     @Test
+    void processPaymentRejectsGatewayDeclineAndPersistsFailedPayment() {
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        when(authentication.getName()).thenReturn("AdminRallyCourt");
+
+        ProcessPaymentRequest request = new ProcessPaymentRequest();
+        request.setReservationId(10L);
+        request.setAmount(new BigDecimal("750.00"));
+        request.setPaymentMethodToken("mock-decline");
+
+        Reservation reservation = new Reservation();
+        reservation.setId(10L);
+        reservation.setReservedBy("AdminRallyCourt");
+        reservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
+        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+
+        when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
+        when(paymentGateway.charge(any())).thenReturn(new PaymentGatewayChargeResult(false, null, "Payment gateway rejected the transaction"));
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PaymentNotAllowedException exception = assertThrows(
+                PaymentNotAllowedException.class,
+                () -> paymentService.processPayment(request)
+        );
+
+        assertEquals("Payment gateway rejected the transaction", exception.getMessage());
+        assertEquals(ReservationStatus.RESERVED_PENDING_PAYMENT, reservation.getStatus());
+        verify(reservationRepository, never()).save(any(Reservation.class));
+    }
+
+    @Test
     void processPaymentRejectsDifferentUser() {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         when(authentication.getName()).thenReturn("AdminRallyCourt");
@@ -131,7 +168,7 @@ class PaymentServiceTest {
         reservation.setId(10L);
         reservation.setReservedBy("AnotherUser");
         reservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
-        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
 
@@ -202,7 +239,7 @@ class PaymentServiceTest {
         reservation.setId(10L);
         reservation.setReservedBy("AdminRallyCourt");
         reservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
-        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
 
@@ -222,7 +259,7 @@ class PaymentServiceTest {
         reservation.setId(10L);
         reservation.setReservedBy("AdminRallyCourt");
         reservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
-        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
 

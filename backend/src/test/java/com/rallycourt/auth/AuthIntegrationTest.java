@@ -50,6 +50,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isString())
+                .andExpect(jsonPath("$.sessionToken").isString())
                 .andExpect(jsonPath("$.email").value(ADMIN_EMAIL))
                 .andExpect(jsonPath("$.role").value("ADMIN"));
     }

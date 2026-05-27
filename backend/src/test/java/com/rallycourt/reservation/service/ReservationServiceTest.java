@@ -1,6 +1,7 @@
 package com.rallycourt.reservation.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,7 +13,9 @@ import static org.mockito.Mockito.when;
 import com.rallycourt.activity.service.ActivityLogService;
 import com.rallycourt.court.entity.Court;
 import com.rallycourt.court.repository.CourtRepository;
+import com.rallycourt.payment.repository.PaymentRepository;
 import com.rallycourt.reservation.config.ReservationProperties;
+import com.rallycourt.reservation.dto.CourtAvailabilityResponse;
 import com.rallycourt.reservation.dto.CreateReservationRequest;
 import com.rallycourt.reservation.dto.ReservationConfigResponse;
 import com.rallycourt.reservation.dto.ReservationPageResponse;
@@ -51,10 +54,12 @@ class ReservationServiceTest {
     private ActivityLogService activityLogService;
 
     @Mock
+    private PaymentRepository paymentRepository;
+
+    @Mock
     private Authentication authentication;
 
-    @InjectMocks
-    private ReservationService reservationService;
+    private ReservationServiceImpl reservationService;
 
     private ReservationProperties reservationProperties;
 
@@ -62,9 +67,10 @@ class ReservationServiceTest {
     void setUp() {
         reservationProperties = new ReservationProperties();
         reservationProperties.setAllowedDurationsMinutes(List.of(60, 90, 120));
-        reservationService = new ReservationService(
+        reservationService = new ReservationServiceImpl(
                 reservationRepository,
                 courtRepository,
+                paymentRepository,
                 activityLogService,
                 reservationProperties
         );
@@ -149,10 +155,68 @@ class ReservationServiceTest {
         when(authentication.getName()).thenReturn("AdminRallyCourt");
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        assertThrows(
+        ReservationConflictException exception = assertThrows(
                 ReservationConflictException.class,
                 () -> reservationService.createReservation(request)
         );
+        assertEquals("Selected time slot is no longer available.", exception.getMessage());
+    }
+
+    @Test
+    void createReservationRejectsStartTimeBeyondTwoWeeks() {
+        CreateReservationRequest request = new CreateReservationRequest();
+        request.setCourtId(1L);
+        request.setStartTime(LocalDateTime.now().plusDays(15));
+        request.setDurationMinutes(60);
+
+        ReservationValidationException exception = assertThrows(
+                ReservationValidationException.class,
+                () -> reservationService.createReservation(request)
+        );
+
+        assertEquals("Reservations can only be created within the next 2 weeks.", exception.getMessage());
+    }
+
+    @Test
+    void getCourtAvailabilityReturnsPendingAndPaidLabels() {
+        Court court = new Court();
+        court.setId(1L);
+        when(courtRepository.findById(1L)).thenReturn(Optional.of(court));
+
+        Reservation pendingReservation = new Reservation();
+        pendingReservation.setId(10L);
+        pendingReservation.setCourtId(1L);
+        pendingReservation.setStartTime(LocalDateTime.now().plusDays(1));
+        pendingReservation.setEndTime(LocalDateTime.now().plusDays(1).plusHours(1));
+        pendingReservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
+
+        Reservation confirmedReservation = new Reservation();
+        confirmedReservation.setId(11L);
+        confirmedReservation.setCourtId(1L);
+        confirmedReservation.setStartTime(LocalDateTime.now().plusDays(1).plusHours(2));
+        confirmedReservation.setEndTime(LocalDateTime.now().plusDays(1).plusHours(3));
+        confirmedReservation.setStatus(ReservationStatus.CONFIRMED);
+
+        com.rallycourt.payment.entity.Payment payment = new com.rallycourt.payment.entity.Payment();
+        payment.setReservationId(11L);
+        payment.setStatus(com.rallycourt.payment.entity.PaymentStatus.SUCCESS);
+
+        when(reservationRepository.findByCourtIdAndStatusInAndStartTimeLessThanAndEndTimeGreaterThanOrderByStartTimeAsc(
+                eq(1L), any(), any(), any()
+        )).thenReturn(List.of(pendingReservation, confirmedReservation));
+        when(paymentRepository.findByReservationIdIn(List.of(10L, 11L))).thenReturn(List.of(payment));
+
+        List<CourtAvailabilityResponse> responses = reservationService.getCourtAvailability(
+                1L,
+                LocalDateTime.now().plusDays(1).withHour(0).withMinute(0),
+                LocalDateTime.now().plusDays(1).withHour(23).withMinute(59)
+        );
+
+        assertEquals(2, responses.size());
+        assertEquals("Booking Pending", responses.get(0).label());
+        assertEquals("PENDING", responses.get(0).paymentStatus());
+        assertEquals("Paid", responses.get(1).label());
+        assertEquals("PAID", responses.get(1).paymentStatus());
     }
 
     @Test
@@ -170,7 +234,8 @@ class ReservationServiceTest {
         reservationService.autoCancelExpiredReservations();
 
         assertEquals(ReservationStatus.AUTO_CANCELLED, expired.getStatus());
-        verify(activityLogService).log("RESERVATION_AUTO_CANCELLED", "reservation:20");
+        assertNotNull(expired.getExpiresAt());
+        verify(activityLogService).log("RESERVATION_AUTO_CANCELLED", "SUCCESS");
     }
 
     @Test
@@ -226,8 +291,15 @@ class ReservationServiceTest {
 
         Reservation reservation = new Reservation();
         reservation.setId(10L);
+        reservation.setCourtId(1L);
+        reservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
         when(reservationRepository.findByReservedBy(eq("AdminRallyCourt"), any()))
                 .thenReturn(new PageImpl<>(List.of(reservation)));
+
+        Court court = new Court();
+        court.setId(1L);
+        court.setName("Reservation Court");
+        when(courtRepository.findAllById(any())).thenReturn(List.of(court));
 
         ReservationPageResponse response = reservationService.getMyReservations(0, 10);
 
@@ -276,7 +348,7 @@ class ReservationServiceTest {
         reservation.setId(13L);
         reservation.setReservedBy("AdminRallyCourt");
         reservation.setStatus(ReservationStatus.CONFIRMED);
-        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         when(reservationRepository.findById(13L)).thenReturn(Optional.of(reservation));
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -286,6 +358,6 @@ class ReservationServiceTest {
         Reservation cancelled = reservationService.cancelReservation(13L);
 
         assertEquals(ReservationStatus.CANCELLED, cancelled.getStatus());
-        assertNull(cancelled.getExpiresAt());
+        assertNotNull(cancelled.getExpiresAt());
     }
 }

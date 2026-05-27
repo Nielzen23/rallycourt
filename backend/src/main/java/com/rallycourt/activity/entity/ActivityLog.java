@@ -11,6 +11,7 @@ public class ActivityLog {
     private String id;
 
     private String action;
+    private String status;
     private String actor;
     private Instant createdAt = Instant.now();
 
@@ -36,6 +37,14 @@ public class ActivityLog {
 
     public void setActor(String actor) {
         this.actor = actor;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Instant getCreatedAt() {

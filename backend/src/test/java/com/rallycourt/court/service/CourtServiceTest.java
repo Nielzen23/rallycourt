@@ -12,6 +12,7 @@ import com.rallycourt.auth.entity.Role;
 import com.rallycourt.auth.entity.User;
 import com.rallycourt.court.dto.CourtRequest;
 import com.rallycourt.court.entity.Court;
+import com.rallycourt.court.entity.CourtStatus;
 import com.rallycourt.court.entity.CourtType;
 import com.rallycourt.court.entity.VenueType;
 import com.rallycourt.court.exception.CourtValidationException;
@@ -22,10 +23,13 @@ import com.rallycourt.court.repository.CourtTypeRepository;
 import com.rallycourt.court.repository.CourtTypeVenueTypeRepository;
 import com.rallycourt.court.repository.VenueTypeRepository;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -52,7 +56,7 @@ class CourtServiceTest {
     private CourtTypeVenueTypeRepository courtTypeVenueTypeRepository;
 
     @InjectMocks
-    private CourtService courtService;
+    private CourtServiceImpl courtService;
 
     private User adminUser;
     private CourtType basketball;
@@ -103,6 +107,7 @@ class CourtServiceTest {
         assertEquals(adminUser, savedCourt.getOwner());
         assertEquals("BASKETBALL", savedCourt.getCourtType().getCode());
         assertEquals("INDOOR", savedCourt.getVenueType().getCode());
+        assertEquals(CourtStatus.AVAILABLE, savedCourt.getStatus());
     }
 
     @Test
@@ -263,6 +268,32 @@ class CourtServiceTest {
 
         assertEquals("FUTSAL is not supported for OUTDOOR venues", exception.getMessage());
         verify(geocodingService, never()).geocode(any());
+    }
+
+    @Test
+    void getCourtsAppliesValidatedFilters() {
+        Court court = new Court();
+        court.setName("Center Court");
+
+        when(courtTypeRepository.findByCode("BADMINTON")).thenReturn(Optional.of(badminton));
+        when(venueTypeRepository.findByCode("INDOOR")).thenReturn(Optional.of(indoor));
+        when(courtRepository.findAllFiltered("BADMINTON", "INDOOR", CourtStatus.AVAILABLE, PageRequest.of(0, 10)))
+                .thenReturn(new PageImpl<>(List.of(court), PageRequest.of(0, 10), 1));
+
+        var response = courtService.getCourts("badminton", "indoor", "available", 0, 10);
+
+        assertEquals(1, response.totalElements());
+        assertEquals("Center Court", response.content().get(0).getName());
+    }
+
+    @Test
+    void getCourtsRejectsUnsupportedStatusFilter() {
+        CourtValidationException exception = assertThrows(
+                CourtValidationException.class,
+                () -> courtService.getCourts(null, null, "maintenance", 0, 10)
+        );
+
+        assertEquals("Unsupported court status: maintenance", exception.getMessage());
     }
 
     private CourtRequest requestFor(String courtType, String venueType) {

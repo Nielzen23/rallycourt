@@ -34,7 +34,7 @@ class CourtOwnerServiceTest {
     private RoleRepository roleRepository;
 
     @InjectMocks
-    private CourtOwnerService courtOwnerService;
+    private CourtOwnerServiceImpl courtOwnerService;
 
     private Role playerRole;
     private Role ownerRole;

@@ -5,8 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rallycourt.auth.entity.User;
 import com.rallycourt.common.entity.AbstractEntity;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import java.math.BigDecimal;
 import java.time.LocalTime;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +24,8 @@ public class Court extends AbstractEntity {
     private String location;
     private Double latitude;
     private Double longitude;
+    @Enumerated(EnumType.STRING)
+    private CourtStatus status;
 
     @Getter(onMethod_ = @JsonIgnore)
     @Setter
@@ -35,6 +41,7 @@ public class Court extends AbstractEntity {
 
     private LocalTime openTime;
     private LocalTime closeTime;
+    private BigDecimal hourlyRate;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "owner_user_id", nullable = false)
@@ -48,5 +55,15 @@ public class Court extends AbstractEntity {
     @JsonProperty("venueType")
     public String getVenueTypeCode() {
         return venueType != null ? venueType.getCode() : null;
+    }
+
+    @PrePersist
+    void initializeDefaults() {
+        if (status == null) {
+            status = CourtStatus.AVAILABLE;
+        }
+        if (hourlyRate == null) {
+            hourlyRate = BigDecimal.valueOf(750);
+        }
     }
 }

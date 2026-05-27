@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-add-court-rent-and-reservation-amount
+      author: neilzendetorres
+      changes:
+        - addColumn:
+            tableName: court
+            columns:
+              - column:
+                  name: hourly_rate
+                  type: numeric(12,2)
+                  defaultValueNumeric: 750.00
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: reservation
+            columns:
+              - column:
+                  name: amount_due
+                  type: numeric(12,2)
+                  defaultValueNumeric: 750.00
+                  constraints:
+                    nullable: false

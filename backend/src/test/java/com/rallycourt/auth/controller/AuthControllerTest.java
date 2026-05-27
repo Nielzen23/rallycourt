@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rallycourt.auth.dto.AuthResponse;
 import com.rallycourt.auth.dto.LoginRequest;
 import com.rallycourt.auth.dto.RegisterRequest;
+import com.rallycourt.auth.dto.SessionTokenRequest;
 import com.rallycourt.auth.exception.AuthExceptionHandler;
 import com.rallycourt.auth.service.AuthService;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class AuthControllerTest {
     void loginReturnsOk() throws Exception {
         MockMvc mockMvc = mockMvc();
         when(authService.login(any(LoginRequest.class))).thenReturn(
-                new AuthResponse("jwt", "player@rallycourt.local", "Player", "One", "PLAYER", "NONE")
+                new AuthResponse("jwt", "session-token", "player@rallycourt.local", "Player", "One", "PLAYER", "NONE", "09123456789")
         );
 
         mockMvc.perform(post("/api/auth/login")
@@ -46,6 +47,7 @@ class AuthControllerTest {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("jwt"))
+                .andExpect(jsonPath("$.sessionToken").value("session-token"))
                 .andExpect(jsonPath("$.email").value("player@rallycourt.local"));
     }
 
@@ -53,7 +55,7 @@ class AuthControllerTest {
     void registerReturnsOk() throws Exception {
         MockMvc mockMvc = mockMvc();
         when(authService.register(any(RegisterRequest.class))).thenReturn(
-                new AuthResponse("jwt", "player@rallycourt.local", "Player", "One", "PLAYER", "NONE")
+                new AuthResponse("jwt", "session-token", "player@rallycourt.local", "Player", "One", "PLAYER", "NONE", "09123456789")
         );
 
         RegisterRequest request = new RegisterRequest(
@@ -70,6 +72,23 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.role").value("PLAYER"))
                 .andExpect(jsonPath("$.courtOwnerStatus").value("NONE"));
+    }
+
+    @Test
+    void refreshReturnsOk() throws Exception {
+        MockMvc mockMvc = mockMvc();
+        when(authService.refresh(any(SessionTokenRequest.class))).thenReturn(
+                new AuthResponse("jwt", "session-token-2", "player@rallycourt.local", "Player", "One", "PLAYER", "NONE", "09123456789")
+        );
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"sessionToken":"session-token"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("jwt"))
+                .andExpect(jsonPath("$.sessionToken").value("session-token-2"));
     }
 
     @Test

@@ -25,7 +25,7 @@ class GeoapifyGeocodingServiceTest {
 
     @Test
     void geocodeRejectsMissingApiKey() {
-        GeoapifyGeocodingService service = new GeoapifyGeocodingService("");
+        GeoapifyGeocodingService service = new GeoapifyGeocodingService("", "ph");
 
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> service.geocode("Makati City"));
 
@@ -117,6 +117,7 @@ class GeoapifyGeocodingServiceTest {
         when(uriBuilder.queryParam("text", "Makati City")).thenReturn(uriBuilder);
         when(uriBuilder.queryParam("apiKey", "test-api-key")).thenReturn(uriBuilder);
         when(uriBuilder.queryParam("limit", 1)).thenReturn(uriBuilder);
+        when(uriBuilder.queryParamIfPresent("filter", java.util.Optional.of("countrycode:ph"))).thenReturn(uriBuilder);
         URI builtUri = URI.create("https://example.test/search");
         when(uriBuilder.build()).thenReturn(builtUri);
 
@@ -127,6 +128,7 @@ class GeoapifyGeocodingServiceTest {
         verify(uriBuilder).queryParam("text", "Makati City");
         verify(uriBuilder).queryParam("apiKey", "test-api-key");
         verify(uriBuilder).queryParam("limit", 1);
+        verify(uriBuilder).queryParamIfPresent("filter", java.util.Optional.of("countrycode:ph"));
         verify(uriBuilder).build();
     }
 
@@ -157,12 +159,53 @@ class GeoapifyGeocodingServiceTest {
         assertEquals("Geoapify geocoding request failed", exception.getReason());
     }
 
+    @Test
+    void autocompleteReturnsEmptyListForBlankQuery() {
+        GeoapifyGeocodingService service = new GeoapifyGeocodingService("test-api-key", "ph");
+
+        assertEquals(List.of(), service.autocomplete("   "));
+    }
+
+    @Test
+    void autocompleteReturnsFormattedSuggestions() throws Exception {
+        Object first = newGeoapifyAutocompleteFeature("Makati City", 14.5547, 121.0244);
+        Object second = newGeoapifyAutocompleteFeature("Ortigas Center", 14.5869, 121.0614);
+        Object response = newGeoapifyResponse(List.of(first, second));
+        GeoapifyGeocodingService service = serviceWithResponse(response);
+
+        var suggestions = service.autocomplete("City");
+
+        assertEquals(2, suggestions.size());
+        assertEquals("Makati City", suggestions.getFirst().address());
+        assertEquals(14.5547, suggestions.getFirst().latitude());
+        assertEquals(121.0244, suggestions.getFirst().longitude());
+    }
+
+    @Test
+    void autocompleteIgnoresFeaturesWithoutFormattedAddress() throws Exception {
+        Class<?> propertiesClass = Class.forName("com.rallycourt.court.geocoding.GeoapifyGeocodingService$GeoapifyProperties");
+        Constructor<?> constructor = propertiesClass.getDeclaredConstructor(double.class, double.class, String.class);
+        constructor.setAccessible(true);
+        Object properties = constructor.newInstance(14.5547, 121.0244, null);
+        Object response = newGeoapifyResponse(List.of(newGeoapifyFeature(properties)));
+        GeoapifyGeocodingService service = serviceWithResponse(response);
+
+        assertEquals(List.of(), service.autocomplete("City"));
+    }
+
+    @Test
+    void autocompleteReturnsEmptyListForNullFeatures() throws Exception {
+        GeoapifyGeocodingService service = serviceWithResponse(newGeoapifyResponse(null));
+
+        assertEquals(List.of(), service.autocomplete("City"));
+    }
+
     private GeoapifyGeocodingService serviceWithResponse(Object response) {
         return serviceMocks(response).service;
     }
 
     private GeoapifyServiceMocks serviceMocks(Object response) {
-        GeoapifyGeocodingService service = new GeoapifyGeocodingService("test-api-key");
+        GeoapifyGeocodingService service = new GeoapifyGeocodingService("test-api-key", "ph");
         RestClient restClient = Mockito.mock(RestClient.class);
         RestClient.RequestHeadersUriSpec requestHeadersUriSpec = Mockito.mock(RestClient.RequestHeadersUriSpec.class);
         RestClient.RequestHeadersSpec requestHeadersSpec = Mockito.mock(RestClient.RequestHeadersSpec.class);
@@ -198,17 +241,17 @@ class GeoapifyGeocodingServiceTest {
 
     private Object newGeoapifyProperties(double lat, double lon) throws Exception {
         Class<?> propertiesClass = Class.forName("com.rallycourt.court.geocoding.GeoapifyGeocodingService$GeoapifyProperties");
-        Constructor<?> constructor = propertiesClass.getDeclaredConstructor(double.class, double.class);
+        Constructor<?> constructor = propertiesClass.getDeclaredConstructor(double.class, double.class, String.class);
         constructor.setAccessible(true);
-        return constructor.newInstance(lat, lon);
+        return constructor.newInstance(lat, lon, "Formatted address");
     }
 
-    private Class<?> geoapifyResponseClass() {
-        try {
-            return Class.forName("com.rallycourt.court.geocoding.GeoapifyGeocodingService$GeoapifyResponse");
-        } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException(exception);
-        }
+    private Object newGeoapifyAutocompleteFeature(String formatted, double lat, double lon) throws Exception {
+        Class<?> propertiesClass = Class.forName("com.rallycourt.court.geocoding.GeoapifyGeocodingService$GeoapifyProperties");
+        Constructor<?> constructor = propertiesClass.getDeclaredConstructor(double.class, double.class, String.class);
+        constructor.setAccessible(true);
+        Object properties = constructor.newInstance(lat, lon, formatted);
+        return newGeoapifyFeature(properties);
     }
 
     private record GeoapifyServiceMocks(

@@ -19,6 +19,7 @@ import com.rallycourt.reservation.entity.ReservationStatus;
 import com.rallycourt.reservation.repository.ReservationRepository;
 import com.rallycourt.reservation.service.ReservationService;
 import com.rallycourt.payment.repository.PaymentRepository;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -116,7 +117,8 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
         existing.setReservedBy(ADMIN_EMAIL);
         existing.setStartTime(existingStart);
         existing.setEndTime(existingStart.plusHours(1));
-        existing.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        existing.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        existing.setAmountDue(BigDecimal.valueOf(750));
         existing.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
         reservationRepository.save(existing);
 
@@ -151,6 +153,24 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void createReservationRejectsStartTimeBeyondTwoWeeks() throws Exception {
+        Court savedCourt = saveOwnedCourt();
+
+        mockMvc.perform(post("/api/reservations")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "courtId": %d,
+                                  "startTime": "%s",
+                                  "durationMinutes": 60
+                                }
+                                """.formatted(savedCourt.getId(), format(LocalDateTime.now().plusDays(15)))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Reservations can only be created within the next 2 weeks."));
+    }
+
+    @Test
     void createReservationRejectsTimeOutsideCourtOperatingHours() throws Exception {
         Court savedCourt = saveOwnedCourt();
 
@@ -175,7 +195,8 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
         mine.setReservedBy(ADMIN_EMAIL);
         mine.setStartTime(LocalDateTime.now().plusHours(5));
         mine.setEndTime(LocalDateTime.now().plusHours(6));
-        mine.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        mine.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        mine.setAmountDue(BigDecimal.valueOf(750));
         mine.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
         reservationRepository.save(mine);
 
@@ -184,7 +205,8 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
         other.setReservedBy("courtownerone@rallycourt.local");
         other.setStartTime(LocalDateTime.now().plusHours(7));
         other.setEndTime(LocalDateTime.now().plusHours(8));
-        other.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        other.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        other.setAmountDue(BigDecimal.valueOf(750));
         other.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
         reservationRepository.save(other);
 
@@ -195,9 +217,43 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].reservedBy").value(ADMIN_EMAIL))
+                .andExpect(jsonPath("$.content[0].courtName").value("Reservation Court"))
+                .andExpect(jsonPath("$.content[0].courtType").value("BASKETBALL"))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(10))
                 .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    void getAllReservationsReturnsAllReservationsForAdmin() throws Exception {
+        Court savedCourt = saveOwnedCourt();
+        Reservation mine = new Reservation();
+        mine.setCourtId(savedCourt.getId());
+        mine.setReservedBy(ADMIN_EMAIL);
+        mine.setStartTime(LocalDateTime.now().plusHours(5));
+        mine.setEndTime(LocalDateTime.now().plusHours(6));
+        mine.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        mine.setAmountDue(BigDecimal.valueOf(750));
+        mine.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
+        reservationRepository.save(mine);
+
+        Reservation other = new Reservation();
+        other.setCourtId(savedCourt.getId());
+        other.setReservedBy("courtownerone@rallycourt.local");
+        other.setStartTime(LocalDateTime.now().plusHours(7));
+        other.setEndTime(LocalDateTime.now().plusHours(8));
+        other.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        other.setAmountDue(BigDecimal.valueOf(750));
+        other.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
+        reservationRepository.save(other);
+
+        mockMvc.perform(get("/api/reservations/all")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.totalElements").value(2));
     }
 
     @Test
@@ -227,7 +283,8 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
         reservation.setReservedBy(ADMIN_EMAIL);
         reservation.setStartTime(LocalDateTime.now().plusHours(4));
         reservation.setEndTime(LocalDateTime.now().plusHours(5));
-        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        reservation.setAmountDue(BigDecimal.valueOf(750));
         reservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
         reservation = reservationRepository.save(reservation);
 
@@ -246,6 +303,7 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
         expired.setStartTime(LocalDateTime.now().plusHours(1));
         expired.setEndTime(LocalDateTime.now().plusHours(2));
         expired.setExpiresAt(LocalDateTime.now().minusMinutes(1));
+        expired.setAmountDue(BigDecimal.valueOf(750));
         expired.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
         expired = reservationRepository.save(expired);
 
@@ -253,7 +311,48 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
 
         Reservation updated = reservationRepository.findById(expired.getId()).orElseThrow();
         Assertions.assertEquals(ReservationStatus.AUTO_CANCELLED, updated.getStatus());
-        Assertions.assertNull(updated.getExpiresAt());
+        Assertions.assertNotNull(updated.getExpiresAt());
+    }
+
+    @Test
+    void getCourtAvailabilityReturnsPendingAndPaidLabels() throws Exception {
+        Court savedCourt = saveOwnedCourt();
+        LocalDateTime pendingStart = LocalDateTime.now().plusDays(1).withHour(10).withMinute(0).withSecond(0).withNano(0);
+
+        Reservation pending = new Reservation();
+        pending.setCourtId(savedCourt.getId());
+        pending.setReservedBy(ADMIN_EMAIL);
+        pending.setStartTime(pendingStart);
+        pending.setEndTime(pendingStart.plusMinutes(90));
+        pending.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        pending.setAmountDue(BigDecimal.valueOf(750));
+        pending.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
+        pending = reservationRepository.save(pending);
+
+        Reservation paid = new Reservation();
+        paid.setCourtId(savedCourt.getId());
+        paid.setReservedBy(ADMIN_EMAIL);
+        paid.setStartTime(pendingStart.plusHours(3));
+        paid.setEndTime(pendingStart.plusHours(4));
+        paid.setAmountDue(BigDecimal.valueOf(750));
+        paid.setStatus(ReservationStatus.CONFIRMED);
+        paid = reservationRepository.save(paid);
+
+        com.rallycourt.payment.entity.Payment payment = new com.rallycourt.payment.entity.Payment();
+        payment.setReservationId(paid.getId());
+        payment.setAmount(java.math.BigDecimal.valueOf(500));
+        payment.setStatus(com.rallycourt.payment.entity.PaymentStatus.SUCCESS);
+        paymentRepository.save(payment);
+
+        mockMvc.perform(get("/api/courts/{id}/availability", savedCourt.getId())
+                        .param("from", format(pendingStart.withHour(0).withMinute(0)))
+                        .param("to", format(pendingStart.withHour(23).withMinute(59)))
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].label").value("Booking Pending"))
+                .andExpect(jsonPath("$[0].paymentStatus").value("PENDING"))
+                .andExpect(jsonPath("$[1].label").value("Paid"))
+                .andExpect(jsonPath("$[1].paymentStatus").value("PAID"));
     }
 
     private Court saveOwnedCourt() {

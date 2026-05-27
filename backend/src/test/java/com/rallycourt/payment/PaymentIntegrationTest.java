@@ -17,6 +17,7 @@ import com.rallycourt.payment.repository.PaymentRepository;
 import com.rallycourt.reservation.entity.Reservation;
 import com.rallycourt.reservation.entity.ReservationStatus;
 import com.rallycourt.reservation.repository.ReservationRepository;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -102,6 +103,24 @@ class PaymentIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Reservation has expired"));
     }
 
+    @Test
+    void processPaymentRejectsMockGatewayDecline() throws Exception {
+        Reservation reservation = savePendingReservation();
+
+        mockMvc.perform(post("/api/payments/process")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "reservationId": %d,
+                                  "amount": 750.00,
+                                  "paymentMethodToken": "mock-decline"
+                                }
+                                """.formatted(reservation.getId())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Payment gateway rejected the transaction"));
+    }
+
     private Reservation savePendingReservation() {
         Court court = new Court();
         court.setName("Payment Court");
@@ -120,7 +139,8 @@ class PaymentIntegrationTest extends AbstractIntegrationTest {
         reservation.setReservedBy(adminUser.getEmail());
         reservation.setStartTime(LocalDateTime.now().plusHours(2));
         reservation.setEndTime(LocalDateTime.now().plusHours(3));
-        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        reservation.setAmountDue(BigDecimal.valueOf(750));
         reservation.setStatus(ReservationStatus.RESERVED_PENDING_PAYMENT);
         return reservationRepository.save(reservation);
     }

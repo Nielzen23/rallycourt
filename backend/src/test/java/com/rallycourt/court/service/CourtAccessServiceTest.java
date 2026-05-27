@@ -30,7 +30,7 @@ class CourtAccessServiceTest {
     private Authentication authentication;
 
     @InjectMocks
-    private CourtAccessService courtAccessService;
+    private CourtAccessServiceImpl courtAccessService;
 
     @AfterEach
     void tearDown() {

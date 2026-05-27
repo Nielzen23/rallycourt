@@ -16,4 +16,6 @@ public class ProcessPaymentRequest {
     @NotNull
     @DecimalMin(value = "0.01")
     private BigDecimal amount;
+
+    private String paymentMethodToken;
 }
