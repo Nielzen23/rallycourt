@@ -1,0 +1,131 @@
+.court-page-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.court-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.court-card__header {
+  display: grid;
+  gap: 4px;
+}
+
+.court-card__header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.court-card__header p {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.court-card__error {
+  margin: 0;
+  color: #a61d24;
+}
+
+.court-filters {
+  display: grid;
+  gap: 14px;
+}
+
+.court-filter-field {
+  display: grid;
+  gap: 8px;
+}
+
+.court-filter-field span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.court-filter-field select {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--heading);
+  font: inherit;
+}
+
+.court-filter-field select:disabled {
+  background: #f1f5f9;
+  color: var(--muted);
+}
+
+.court-results-meta,
+.court-empty-state {
+  color: var(--muted);
+}
+
+.court-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.court-list__item {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+}
+
+.court-list__item--selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
+}
+
+.court-list__button {
+  display: grid;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.court-list span,
+.court-list small {
+  color: var(--muted);
+}
+
+.court-list__reserve {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--warning);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 1080px) {
+  .court-page-grid {
+    grid-template-columns: 1fr;
+  }
+}

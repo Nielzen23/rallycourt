@@ -1,0 +1,88 @@
+services:
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: rallycourt-frontend
+    working_dir: /app
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      backend:
+        condition: service_started
+
+  backend:
+    image: gradle:8.6-jdk21
+    container_name: rallycourt-backend
+    working_dir: /app
+    command: gradle bootRun
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rallycourt
+      SPRING_DATASOURCE_USERNAME: rallycourt
+      SPRING_DATASOURCE_PASSWORD: rallycourt
+      SPRING_DATA_MONGODB_URI: mongodb://rallycourt:rallycourt@mongodb:27017/rallycourt?authSource=admin
+      APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Manila}
+      JWT_SECRET: ${JWT_SECRET:-VGhpc0lzQVNlY3VyZURlbW9TZWNyZXRGb3JKV1RUaGF0SXNMb25nRW5vdWdoMTIzNDU2}
+      GEOAPIFY_API_KEY: ${GEOAPIFY_API_KEY:-2d66ecf7de99423c8d807b296cf3ba02}
+      GEOAPIFY_COUNTRY_CODE: ${GEOAPIFY_COUNTRY_CODE:-ph}
+    volumes:
+      - ../backend:/app
+      - gradle_cache:/home/gradle/.gradle
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    container_name: rallycourt-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rallycourt
+      POSTGRES_USER: rallycourt
+      POSTGRES_PASSWORD: rallycourt
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rallycourt -d rallycourt"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    container_name: rallycourt-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: rallycourt
+      MONGO_INITDB_ROOT_PASSWORD: rallycourt
+      MONGO_INITDB_DATABASE: rallycourt
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --username rallycourt --password rallycourt --authenticationDatabase admin --eval \"db.runCommand({ ping: 1 }).ok\" | grep 1",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  gradle_cache:
+  frontend_node_modules:

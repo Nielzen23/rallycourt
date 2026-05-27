@@ -1,0 +1,44 @@
+.page-layout {
+  min-height: 100svh;
+  padding: 40px;
+  background: var(--surface);
+}
+
+.page-layout__header {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.page-layout__eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.page-layout__header h1 {
+  margin: 0;
+  font-size: 36px;
+  line-height: 1.05;
+}
+
+.page-layout__header p {
+  max-width: 60ch;
+  color: var(--muted);
+}
+
+.page-layout__content {
+  display: grid;
+  gap: 20px;
+}
+
+@media (max-width: 1080px) {
+  .page-layout {
+    padding: 24px 18px 32px;
+  }
+
+  .page-layout__header h1 {
+    font-size: 28px;
+  }
+}

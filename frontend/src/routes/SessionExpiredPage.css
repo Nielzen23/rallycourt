@@ -1,0 +1,70 @@
+.session-expired-shell {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--surface);
+}
+
+.session-expired-panel {
+  width: min(100%, 520px);
+  display: grid;
+  gap: 20px;
+  padding: 28px;
+}
+
+.session-expired-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.session-expired-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.session-expired-eyebrow {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.session-expired-copy h1,
+.session-expired-copy p {
+  margin: 0;
+}
+
+.session-expired-copy p {
+  color: var(--muted);
+}
+
+.session-expired-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .session-expired-shell {
+    padding: 16px;
+  }
+
+  .session-expired-panel {
+    padding: 20px 16px;
+  }
+
+  .session-expired-actions {
+    flex-direction: column;
+  }
+
+  .session-expired-actions a {
+    width: 100%;
+  }
+}

@@ -1,0 +1,229 @@
+.admin-courts-page {
+  display: block;
+}
+
+.admin-courts-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.admin-courts-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-courts-panel__header h2,
+.admin-section-title h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.admin-courts-panel__header p,
+.admin-section-title p,
+.admin-feedback,
+.admin-placeholder,
+.admin-delete-copy {
+  color: var(--muted);
+}
+
+.admin-courts-filters,
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-courts-filters select,
+.admin-form-grid input,
+.admin-form-grid select {
+  width: 100%;
+}
+
+.admin-form-grid label {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-location-field {
+  position: relative;
+}
+
+.admin-location-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: grid;
+  gap: 4px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+.admin-location-suggestion {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--heading);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-location-suggestion:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.admin-location-suggestion--muted {
+  color: var(--muted);
+  cursor: default;
+}
+
+.admin-form-grid span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-courts-table-wrap,
+.admin-reservations-table-wrap {
+  overflow: auto;
+}
+
+.admin-courts-table,
+.admin-reservations-table {
+  min-width: 100%;
+}
+
+.admin-courts-table th,
+.admin-courts-table td,
+.admin-reservations-table th,
+.admin-reservations-table td {
+  white-space: nowrap;
+}
+
+.admin-courts-table tbody tr.is-selected {
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.admin-courts-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-details-stack,
+.admin-reservations-section {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-details-grid div {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.admin-details-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.admin-map-wrap {
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.admin-details-modal {
+  width: min(100%, 960px);
+}
+
+.admin-modal-backdrop {
+  z-index: 80;
+}
+
+.admin-modal {
+}
+
+.admin-modal--compact {
+}
+
+.admin-modal__header {
+  gap: 16px;
+}
+
+.admin-modal__header span {
+  color: var(--accent);
+}
+
+.admin-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.admin-feedback--success {
+  color: #065f46;
+}
+
+.admin-feedback--error {
+  color: #b91c1c;
+}
+
+@media (max-width: 1080px) {
+}
+
+@media (max-width: 720px) {
+  .admin-courts-filters,
+  .admin-form-grid,
+  .admin-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-courts-panel__header,
+  .admin-modal__header,
+  .admin-modal__actions {
+    flex-direction: column;
+  }
+
+  .admin-courts-panel,
+  .admin-details-grid div {
+    padding: 16px;
+  }
+
+  .admin-modal {
+    padding: 20px 16px 16px;
+  }
+
+  .admin-courts-actions {
+    min-width: 180px;
+    flex-direction: column;
+  }
+
+  .admin-courts-actions button {
+    width: 100%;
+  }
+}

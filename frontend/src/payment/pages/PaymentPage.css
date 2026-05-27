@@ -1,0 +1,89 @@
+.payment-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.payment-action {
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  background: var(--accent);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.payment-status {
+  margin: 0 0 18px;
+  color: var(--heading);
+}
+
+.payment-form {
+  display: grid;
+  gap: 16px;
+}
+
+.payment-form fieldset {
+  display: grid;
+  gap: 10px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.payment-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.56);
+  backdrop-filter: blur(6px);
+}
+
+.payment-modal {
+  position: relative;
+  width: min(100%, 520px);
+  max-height: calc(100svh - 48px);
+  overflow: auto;
+  padding: 28px 24px 24px;
+  background: #ffffff;
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 28px 72px rgba(15, 23, 42, 0.28);
+}
+
+.payment-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.payment-modal-header {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.payment-modal-header h2,
+.payment-modal-header p {
+  margin: 0;
+}
+
+.payment-modal-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+}

@@ -1,0 +1,241 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.dashboard-card {
+  display: grid;
+  gap: 8px;
+  min-height: 160px;
+  padding: 20px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.dashboard-card strong {
+  font-size: 20px;
+}
+
+.dashboard-card span {
+  color: var(--muted);
+}
+
+.dashboard-card--reservations {
+  align-content: start;
+}
+
+.dashboard-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dashboard-action-button {
+  min-height: 40px;
+  padding: 0 16px;
+}
+
+.dashboard-action-button--pending {
+  opacity: 1;
+}
+
+.dashboard-action-button:disabled {
+  opacity: 1;
+}
+
+.dashboard-reservation-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.dashboard-card__feedback {
+  margin: 0;
+  color: var(--muted);
+}
+
+.dashboard-card__feedback--error {
+  color: #b91c1c;
+}
+
+.dashboard-reservation-item {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--panel-border);
+  background: var(--surface);
+  border-radius: 12px;
+}
+
+.dashboard-reservation-item header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard-reservation-item h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.dashboard-reservation-item header span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.dashboard-reservation-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.dashboard-map-button {
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.dashboard-payment-button {
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.dashboard-payment-button--pending {
+  cursor: pointer;
+}
+
+.dashboard-payment-button--paid:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.dashboard-payment-form {
+  display: grid;
+  gap: 16px;
+}
+
+.dashboard-payment-note {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.dashboard-payment-amount {
+  margin: 0 0 8px;
+  color: var(--heading);
+}
+
+.dashboard-payment-form fieldset {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.dashboard-payment-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dashboard-reservation-item dl {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard-reservation-item dl div {
+  display: grid;
+  gap: 4px;
+}
+
+.dashboard-reservation-item dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dashboard-reservation-item dd {
+  margin: 0;
+}
+
+.page-form-modal-backdrop {
+  z-index: 70;
+}
+
+.page-form-modal {
+  max-height: calc(100svh - 48px);
+  overflow: auto;
+  padding: 28px 24px 24px;
+}
+
+.page-form-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.page-form-modal-header {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.page-form-modal-header h2,
+.page-form-modal-header p {
+  margin: 0;
+}
+
+.page-form-modal-eyebrow {
+  display: inline-flex;
+}
+
+@media (max-width: 1080px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .dashboard-card__header,
+  .dashboard-reservation-item header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-card__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .dashboard-action-button,
+  .dashboard-map-button,
+  .dashboard-payment-button {
+    width: 100%;
+  }
+
+  .dashboard-payment-actions {
+    flex-direction: column;
+  }
+
+  .dashboard-payment-actions button {
+    width: 100%;
+  }
+}

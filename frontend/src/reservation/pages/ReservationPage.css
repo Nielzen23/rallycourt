@@ -1,0 +1,102 @@
+.reservation-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.reservation-action {
+  height: 42px;
+  font-weight: 700;
+}
+
+.reservation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.reservation-card {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.reservation-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.reservation-card h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.reservation-card header span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.reservation-card dl {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.reservation-card dl div {
+  display: grid;
+  gap: 4px;
+}
+
+.reservation-card dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.reservation-card dd {
+  margin: 0;
+}
+
+.page-form-modal-backdrop {
+  z-index: 70;
+}
+
+.page-form-modal {
+  max-height: calc(100svh - 48px);
+  overflow: auto;
+  padding: 28px 24px 24px;
+}
+
+.page-form-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.page-form-modal-header {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.page-form-modal-header h2,
+.page-form-modal-header p {
+  margin: 0;
+}
+
+.page-form-modal-eyebrow {
+  display: inline-flex;
+}
+
+@media (max-width: 1080px) {
+  .reservation-grid {
+    grid-template-columns: 1fr;
+  }
+}
