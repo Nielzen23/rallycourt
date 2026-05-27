@@ -7,9 +7,25 @@ name: Backend CI
       - master
 
 jobs:
-  test:
+  backend-ci:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
-      - name: Hello
-        run: echo "GitHub Actions works"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Run backend quality checks
+        run: ./gradlew clean test jacocoTestReport jacocoTestCoverageVerification checkstyleMain checkstyleTest
