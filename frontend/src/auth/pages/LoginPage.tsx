@@ -22,9 +22,6 @@ const textLinkClassName =
   'border-0 bg-transparent p-0 font-semibold text-blue-600 transition hover:text-blue-700'
 const feedbackBaseClassName = 'rounded-xl border px-3.5 py-3 text-left text-sm leading-6'
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
-
 function LoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -122,8 +119,6 @@ function LoginPage() {
           </form>
 
           <div className="grid gap-1.5 text-left text-[13px]">
-            <p>Default API base URL: {API_BASE_URL}</p>
-            <p>Set `VITE_API_BASE_URL` to target another backend environment.</p>
             <p>
               <button className={textLinkClassName} type="button" onClick={() => navigate('/register')}>
                 Don&apos;t have an account? Sign up

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Building2, CircleUserRound, Home, LogOut, Menu, X } from 'lucide-react'
+import { Activity, Building2, CircleUserRound, Home, LogOut, Menu, X } from 'lucide-react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import HeaderLogo from '../components/HeaderLogo'
 import {
@@ -38,7 +38,11 @@ function AppLayout() {
   const role = getStoredRole()
   const isAdmin = role === 'ADMIN'
   const activeSection =
-    location.pathname === '/court-management' ? 'Court Management' : 'Dashboard'
+    location.pathname === '/court-management'
+      ? 'Court Management'
+      : location.pathname === '/user-activity'
+        ? 'User Activity'
+        : 'Dashboard'
 
   const handleSignOut = () => {
     clearAuthSession()
@@ -102,21 +106,35 @@ function AppLayout() {
                 <span>Dashboard</span>
               </Link>
               {isAdmin ? (
-                <Link
-                  className={`${headerIconButtonClassName} ${
-                    location.pathname === '/court-management'
-                      ? headerIconButtonActiveClassName
-                      : ''
-                  }`}
-                  to="/court-management"
-                  aria-label="Courts tab"
-                  title="Courts"
-                >
-                  <Building2 size={18} />
-                </Link>
+                <>
+                  <Link
+                    className={`${headerIconButtonClassName} ${
+                      location.pathname === '/court-management'
+                        ? headerIconButtonActiveClassName
+                        : ''
+                    }`}
+                    to="/court-management"
+                    aria-label="Courts tab"
+                    title="Courts"
+                  >
+                    <Building2 size={18} />
+                  </Link>
+                  <Link
+                    className={`${headerIconButtonClassName} ${
+                      location.pathname === '/user-activity'
+                        ? headerIconButtonActiveClassName
+                        : ''
+                    }`}
+                    to="/user-activity"
+                    aria-label="User activity tab"
+                    title="User activity"
+                  >
+                    <Activity size={18} />
+                  </Link>
+                </>
               ) : null}
             </nav>
-            {location.pathname === '/court-management' ? (
+            {location.pathname === '/court-management' || location.pathname === '/user-activity' ? (
               <span className="text-right text-[0.95rem] font-semibold text-slate-900">{activeSection}</span>
             ) : null}
           </div>
@@ -163,22 +181,37 @@ function AppLayout() {
                     <span>Dashboard</span>
                   </Link>
                   {isAdmin ? (
-                    <Link
-                      className={`${headerIconButtonClassName} ${
-                        location.pathname === '/court-management'
-                          ? headerIconButtonActiveClassName
-                          : ''
-                      }`}
-                      to="/court-management"
-                      aria-label="Courts tab"
-                      title="Courts"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Building2 size={18} />
-                    </Link>
+                    <>
+                      <Link
+                        className={`${headerIconButtonClassName} ${
+                          location.pathname === '/court-management'
+                            ? headerIconButtonActiveClassName
+                            : ''
+                        }`}
+                        to="/court-management"
+                        aria-label="Courts tab"
+                        title="Courts"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Building2 size={18} />
+                      </Link>
+                      <Link
+                        className={`${headerIconButtonClassName} ${
+                          location.pathname === '/user-activity'
+                            ? headerIconButtonActiveClassName
+                            : ''
+                        }`}
+                        to="/user-activity"
+                        aria-label="User activity tab"
+                        title="User activity"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Activity size={18} />
+                      </Link>
+                    </>
                   ) : null}
                 </nav>
-                {location.pathname === '/court-management' ? (
+                {location.pathname === '/court-management' || location.pathname === '/user-activity' ? (
                   <span className="text-right text-[0.95rem] font-semibold text-slate-900">{activeSection}</span>
                 ) : null}
               </div>

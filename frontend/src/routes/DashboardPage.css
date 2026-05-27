@@ -122,6 +122,16 @@
   cursor: default;
 }
 
+.dashboard-payment-button--paid {
+  border-color: rgba(16, 185, 129, 0.22);
+  background: rgba(16, 185, 129, 0.14);
+  color: var(--success-strong);
+}
+
+.dashboard-payment-button--paid:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.2);
+}
+
 .dashboard-payment-form {
   display: grid;
   gap: 16px;
@@ -129,7 +139,13 @@
 
 .dashboard-payment-note {
   margin: 0 0 12px;
-  color: var(--muted);
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.06);
+  padding: 12px 14px;
+  color: #1e40af;
+  font-size: 0.94rem;
+  line-height: 1.5;
 }
 
 .dashboard-payment-amount {
@@ -190,6 +206,17 @@
   height: 36px;
   font-size: 28px;
   line-height: 1;
+}
+
+.page-form-modal-close--danger {
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.page-form-modal-close--danger:hover {
+  background: #fecaca;
+  color: #b91c1c;
 }
 
 .page-form-modal-header {

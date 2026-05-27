@@ -9,6 +9,7 @@ import DashboardPage from './routes/DashboardPage'
 import LandingPage from './landing/pages/LandingPage'
 import CourtManagementPage from './admin/courts/pages/CourtManagementPage'
 import SessionExpiredPage from './routes/SessionExpiredPage'
+import UserActivityPage from './admin/activity/pages/UserActivityPage'
 
 export const router = createBrowserRouter([
   {
@@ -72,6 +73,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['ADMIN', 'COURT_OWNER']}>
             <CourtManagementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'user-activity',
+        element: (
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <UserActivityPage />
           </ProtectedRoute>
         ),
       },

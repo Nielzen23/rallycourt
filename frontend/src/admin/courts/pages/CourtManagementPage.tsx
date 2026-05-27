@@ -72,6 +72,7 @@ function CourtManagementPage() {
         status: court.status,
         openTime: court.openTime ?? '08:00:00',
         closeTime: court.closeTime ?? '22:00:00',
+        hourlyRate: court.hourlyRate,
       })),
     [courts],
   )
@@ -419,7 +420,6 @@ function CourtManagementPage() {
                     <h3>
                       <CalendarDays size={16} /> Upcoming Reservations
                     </h3>
-                    <p>Nearest future reservations with payment visibility.</p>
                   </div>
                   <div className="admin-reservations-table-wrap">
                     <table className="admin-reservations-table app-table">

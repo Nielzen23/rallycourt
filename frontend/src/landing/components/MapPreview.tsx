@@ -22,7 +22,7 @@ const fallbackMarkers: LandingCourtMarker[] = [
 ]
 
 function MapPreview() {
-  const [markers, setMarkers] = useState<LandingCourtMarker[]>(fallbackMarkers)
+  const [markers] = useState<LandingCourtMarker[]>(fallbackMarkers)
 
   const center: LatLngExpression = markers.length
     ? [markers[0].latitude, markers[0].longitude]

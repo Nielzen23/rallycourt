@@ -1,0 +1,215 @@
+.app-card {
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.app-table-wrap {
+  overflow-x: auto;
+}
+
+.app-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.app-table th,
+.app-table td {
+  text-align: left;
+  vertical-align: top;
+}
+
+.app-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(8px);
+}
+
+.app-modal {
+  position: relative;
+  display: grid;
+  gap: 20px;
+  width: min(100%, 720px);
+  max-height: min(90vh, 920px);
+  overflow-y: auto;
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  background: var(--panel);
+  color: var(--heading);
+  box-shadow: 0 28px 72px rgba(15, 23, 42, 0.28);
+}
+
+.app-modal-compact {
+  width: min(100%, 560px);
+}
+
+.app-modal-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.app-modal-header h2 {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.app-modal-header p {
+  color: var(--muted);
+}
+
+.app-eyebrow {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.app-close-button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.app-close-button:hover {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--heading);
+}
+
+.app-button,
+.app-button-secondary,
+.app-button-danger,
+.app-button-warning {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.app-button:disabled,
+.app-button-secondary:disabled,
+.app-button-danger:disabled,
+.app-button-warning:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.app-button {
+  background: var(--accent);
+  color: #fff;
+}
+
+.app-button:hover:not(:disabled) {
+  background: var(--accent-strong);
+}
+
+.app-button-secondary {
+  border-color: var(--panel-border);
+  background: #fff;
+  color: var(--heading);
+}
+
+.app-button-secondary:hover:not(:disabled) {
+  border-color: var(--input-border);
+  background: #f8fafc;
+}
+
+.app-button-danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.app-button-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.app-button-warning {
+  background: var(--warning-weak);
+  color: var(--warning-text);
+}
+
+.app-button-warning:hover:not(:disabled) {
+  background: #fde68a;
+}
+
+.app-input,
+.app-select {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--heading);
+  padding: 0 14px;
+  font: inherit;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.app-input::placeholder {
+  color: var(--placeholder);
+}
+
+.app-input:focus,
+.app-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.app-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.app-badge-success {
+  background: rgba(16, 185, 129, 0.14);
+  color: var(--success-strong);
+}
+
+.app-badge-warning {
+  background: var(--warning-weak);
+  color: var(--warning-text);
+}
+
+@media (min-width: 640px) {
+  .app-modal-backdrop {
+    padding: 24px;
+  }
+}

@@ -85,7 +85,7 @@ function ReservationPage() {
               aria-label="Close reservation form"
               onClick={() => setIsReservationModalOpen(false)}
             >
-              ×
+              X
             </button>
             <div className="page-form-modal-header">
               <span className="page-form-modal-eyebrow app-eyebrow">Reservation</span>

@@ -109,10 +109,22 @@
 }
 
 .admin-courts-table th,
-.admin-courts-table td,
 .admin-reservations-table th,
 .admin-reservations-table td {
   white-space: nowrap;
+}
+
+.admin-courts-table td {
+  vertical-align: top;
+}
+
+.admin-courts-table th:nth-child(5),
+.admin-courts-table td:nth-child(5) {
+  width: 28%;
+  min-width: 220px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .admin-courts-table tbody tr.is-selected {

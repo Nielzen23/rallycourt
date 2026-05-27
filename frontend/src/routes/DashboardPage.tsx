@@ -240,7 +240,7 @@ function DashboardPage() {
               aria-label="Close reservation form"
               onClick={() => setIsReservationModalOpen(false)}
             >
-              ×
+              X
             </button>
             <div className="page-form-modal-header">
               <span className="page-form-modal-eyebrow app-eyebrow">Reservation</span>
@@ -286,12 +286,12 @@ function DashboardPage() {
             onClick={(event) => event.stopPropagation()}
           >
             <button
-              className="page-form-modal-close app-close-button"
+              className="page-form-modal-close page-form-modal-close--danger app-close-button"
               type="button"
               aria-label="Close payment form"
               onClick={() => setSelectedPaymentReservation(null)}
             >
-              Ã—
+              X
             </button>
             <div className="page-form-modal-header">
               <span className="page-form-modal-eyebrow app-eyebrow">Payment</span>
@@ -301,7 +301,7 @@ function DashboardPage() {
             <p className="dashboard-payment-amount">
               Amount due: <strong>{formatCurrency(selectedPaymentReservation.amountDue)}</strong>
             </p>
-            <p className="dashboard-payment-note">
+            <p className="dashboard-payment-note" role="note">
               {formatExpiration(selectedPaymentReservation.expiresAt)}
             </p>
             <form
