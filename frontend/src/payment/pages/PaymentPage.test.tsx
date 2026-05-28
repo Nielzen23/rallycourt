@@ -21,6 +21,9 @@ describe('PaymentPage', () => {
       </MemoryRouter>,
     )
 
+    fireEvent.click(screen.getByRole('button', { name: /open payment form/i }))
+
+    expect(screen.getByRole('heading', { name: /submit payment/i })).toBeInTheDocument()
     expect(screen.getByLabelText(/card/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/gcash/i)).toBeInTheDocument()
   })
@@ -34,6 +37,7 @@ describe('PaymentPage', () => {
       </MemoryRouter>,
     )
 
+    fireEvent.click(screen.getByRole('button', { name: /open payment form/i }))
     fireEvent.click(screen.getByRole('button', { name: /submit payment/i }))
 
     await waitFor(() => {
@@ -53,6 +57,7 @@ describe('PaymentPage', () => {
       </MemoryRouter>,
     )
 
+    fireEvent.click(screen.getByRole('button', { name: /open payment form/i }))
     fireEvent.click(screen.getByRole('button', { name: /submit payment/i }))
 
     expect(

@@ -7,6 +7,12 @@ import {
   AUTH_TOKEN_STORAGE_KEY,
 } from '../utils/authStorage'
 
+function createToken(expSecondsFromNow = 3600) {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
+  const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + expSecondsFromNow }))
+  return `${header}.${payload}.signature`
+}
+
 describe('ProtectedRoute', () => {
   it('redirects unauthenticated users', () => {
     renderWithRouter(
@@ -28,10 +34,11 @@ describe('ProtectedRoute', () => {
   })
 
   it('allows authenticated users', () => {
-    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, 'token')
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, createToken())
 
     renderWithRouter(
       <Routes>
+        <Route path="/session-expired" element={<div>Session expired</div>} />
         <Route
           path="/courts"
           element={
@@ -48,11 +55,12 @@ describe('ProtectedRoute', () => {
   })
 
   it('redirects authenticated users without an allowed role', () => {
-    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, 'token')
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, createToken())
     localStorage.setItem(AUTH_ROLE_STORAGE_KEY, 'PLAYER')
 
     renderWithRouter(
       <Routes>
+        <Route path="/session-expired" element={<div>Session expired</div>} />
         <Route path="/dashboard" element={<div>Dashboard</div>} />
         <Route
           path="/courts"
