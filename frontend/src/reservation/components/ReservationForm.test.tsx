@@ -74,6 +74,12 @@ describe('ReservationForm', () => {
     render(<ReservationForm />)
 
     const input = screen.getByLabelText(/start date/i)
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(0, 0, 0, 0)
+    const expectedMin = `${tomorrow.getFullYear()}-${`${tomorrow.getMonth() + 1}`.padStart(2, '0')}-${`${tomorrow.getDate()}`.padStart(2, '0')}`
+
+    expect(input).toHaveAttribute('min', expectedMin)
     expect(input).toHaveAttribute('min')
     expect(input).toHaveAttribute('max')
   })

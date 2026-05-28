@@ -71,6 +71,12 @@ function roundDownToQuarterHour(base: Date) {
   return next
 }
 
+function startOfDay(base: Date) {
+  const next = new Date(base)
+  next.setHours(0, 0, 0, 0)
+  return next
+}
+
 function toApiDateTime(value: string) {
   return value.length === 16 ? `${value}:00` : value
 }
@@ -143,7 +149,7 @@ function ReservationForm({ initialCourtId = '', onSubmit }: ReservationFormProps
 
   const canLoadCourts = courtType.length > 0 && venueType.length > 0
   const now = useMemo(() => new Date(), [])
-  const minimumReservationDate = useMemo(() => roundUpToQuarterHour(now), [now])
+  const minimumReservationDate = useMemo(() => startOfDay(addDays(now, 1)), [now])
   const maximumReservationDate = useMemo(() => roundDownToQuarterHour(addDays(now, 14)), [now])
   const minDate = useMemo(() => formatDateInput(minimumReservationDate), [minimumReservationDate])
   const maxDate = useMemo(() => formatDateInput(maximumReservationDate), [maximumReservationDate])

@@ -22,6 +22,7 @@ import com.rallycourt.reservation.exception.ReservationValidationException;
 import com.rallycourt.reservation.repository.ReservationRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -239,8 +240,11 @@ public class ReservationServiceImpl implements ReservationService {
 
     private void validateReservationWindow(LocalDateTime startTime) {
         LocalDateTime now = LocalDateTime.now();
-        if (startTime.isBefore(now) || startTime.isAfter(now.plusDays(14))) {
-            throw new ReservationValidationException("Reservations can only be created within the next 2 weeks.");
+        LocalDate earliestReservationDate = now.toLocalDate().plusDays(1);
+        if (startTime.isBefore(now)
+                || startTime.toLocalDate().isBefore(earliestReservationDate)
+                || startTime.isAfter(now.plusDays(14))) {
+            throw new ReservationValidationException("Reservations must start from tomorrow and be within the next 2 weeks.");
         }
     }
 

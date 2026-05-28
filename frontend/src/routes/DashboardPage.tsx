@@ -28,6 +28,7 @@ function DashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null)
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(role === 'ADMIN')
   const [dashboardErrorMessage, setDashboardErrorMessage] = useState('')
+  const canSubmitPayment = role !== 'ADMIN'
 
   const visibleReservations = useMemo(() => {
     const now = Date.now()
@@ -84,9 +85,9 @@ function DashboardPage() {
 
   const formatExpiration = (value: string | null) => {
     if (!value) {
-      return 'This booking is held for 30 minutes.'
+      return 'This booking is held for 5 minutes.'
     }
-    return `This booking is held for 30 minutes. Expires at ${new Date(value).toLocaleString()} local time.`
+    return `This booking is held for 5 minutes. Expires at ${new Date(value).toLocaleString()} local time.`
   }
 
   const formatCurrency = (value: number) =>
@@ -177,7 +178,7 @@ function DashboardPage() {
   }, [reservationHistoryTotalPages])
 
   const handlePaymentSubmit = async () => {
-    if (!selectedPaymentReservation) {
+    if (!selectedPaymentReservation || !canSubmitPayment) {
       return
     }
 
@@ -367,7 +368,6 @@ function DashboardPage() {
   return (
     <PageLayout
       title="Dashboard"
-      description="Protected landing page after authentication. Use it as the navigation hub for court, reservation, and payment workflows."
     >
       <section className="dashboard-grid">
         <div className="dashboard-card dashboard-card--reservations app-card">
@@ -622,6 +622,11 @@ function DashboardPage() {
             <p className="dashboard-payment-note" role="note">
               {formatExpiration(selectedPaymentReservation.expiresAt)}
             </p>
+            {!canSubmitPayment ? (
+              <p className="dashboard-card__feedback" role="note">
+                Payments can only be completed by the player who made the reservation.
+              </p>
+            ) : null}
             <form
               className="dashboard-payment-form"
               onSubmit={async (event) => {
@@ -636,6 +641,7 @@ function DashboardPage() {
                     checked={paymentMethod === 'CARD'}
                     name="payment-method"
                     type="radio"
+                    disabled={!canSubmitPayment}
                     onChange={() => setPaymentMethod('CARD')}
                   />
                   Card
@@ -645,6 +651,7 @@ function DashboardPage() {
                     checked={paymentMethod === 'GCASH'}
                     name="payment-method"
                     type="radio"
+                    disabled={!canSubmitPayment}
                     onChange={() => setPaymentMethod('GCASH')}
                   />
                   GCash
@@ -656,8 +663,10 @@ function DashboardPage() {
                 </p>
               ) : null}
               <div className="dashboard-payment-actions">
-                <button className="app-button" type="submit" disabled={isSubmittingPayment}>
-                  {isSubmittingPayment ? 'Submitting payment...' : 'Pay now'}
+                <button className="app-button" type="submit" disabled={isSubmittingPayment || !canSubmitPayment}>
+                  {canSubmitPayment
+                    ? (isSubmittingPayment ? 'Submitting payment...' : 'Pay now')
+                    : 'Payment unavailable'}
                 </button>
                 <button
                   className="app-button-secondary"

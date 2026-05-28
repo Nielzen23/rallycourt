@@ -570,6 +570,10 @@ function CourtManagementPage() {
                     <strong>{selectedCourt.status}</strong>
                   </div>
                   <div>
+                    <span>Hourly Rate</span>
+                    <strong>{formatCurrency(selectedCourt.hourlyRate)}/hour</strong>
+                  </div>
+                  <div>
                     <span>Location</span>
                     <strong>{selectedCourt.location}</strong>
                   </div>

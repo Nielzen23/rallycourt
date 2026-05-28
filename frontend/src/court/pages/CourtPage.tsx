@@ -21,6 +21,10 @@ const VENUE_TYPE_OPTIONS = [
   { value: 'OUTDOOR', label: 'Outdoor' },
 ]
 
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'PHP' }).format(value)
+}
+
 function CourtPage() {
   const navigate = useNavigate()
   const [courtType, setCourtType] = useState('')
@@ -149,6 +153,7 @@ function CourtPage() {
                   >
                     <strong>{court.name}</strong>
                     <span>{court.location}</span>
+                    <small>Hourly Rate: {formatCurrency(court.hourlyRate)}</small>
                     <small>{court.venueType} | {court.openTime} - {court.closeTime}</small>
                   </button>
                   <button

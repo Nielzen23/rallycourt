@@ -325,6 +325,22 @@ describe('DashboardPage', () => {
     expect(screen.getByText('09171234567')).toBeInTheDocument()
   })
 
+  it('allows admins to open pending payment details without proceeding to payment', async () => {
+    localStorage.setItem(AUTH_ROLE_STORAGE_KEY, 'ADMIN')
+
+    renderWithRouter(<DashboardPage />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /pending payment/i }))
+
+    expect(screen.getByLabelText('Payment form')).toBeInTheDocument()
+    expect(screen.getByText('Payments can only be completed by the player who made the reservation.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Payment unavailable' })).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Payment unavailable' }))
+
+    expect(processPaymentMock).not.toHaveBeenCalled()
+  })
+
   it('shows reservation history for admins using past bookings', async () => {
     localStorage.setItem(AUTH_ROLE_STORAGE_KEY, 'ADMIN')
 

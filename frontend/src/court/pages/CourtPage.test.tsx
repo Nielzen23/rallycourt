@@ -60,6 +60,7 @@ describe('CourtPage', () => {
           status: 'AVAILABLE',
           openTime: '08:00:00',
           closeTime: '22:00:00',
+          hourlyRate: 750,
         },
       ],
       isLoading: false,
@@ -79,6 +80,7 @@ describe('CourtPage', () => {
 
     expect(screen.getByText('Center Court')).toBeInTheDocument()
     expect(screen.getByText('Makati City')).toBeInTheDocument()
+    expect(screen.getByText(/hourly rate:/i)).toBeInTheDocument()
   })
 
   it('shows loading state', () => {
@@ -131,6 +133,7 @@ describe('CourtPage', () => {
           status: 'AVAILABLE',
           openTime: '08:00:00',
           closeTime: '22:00:00',
+          hourlyRate: 750,
         },
       ],
       isLoading: false,

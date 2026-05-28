@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 import CourtManagementPage from './CourtManagementPage'
@@ -80,6 +80,7 @@ describe('CourtManagementPage', () => {
       status: 'AVAILABLE',
       openTime: '08:00:00',
       closeTime: '22:00:00',
+      hourlyRate: 750,
       upcomingReservations: [
         {
           reservationId: 1,
@@ -111,6 +112,7 @@ describe('CourtManagementPage', () => {
 
     expect(screen.getByText('PAID')).toBeInTheDocument()
     expect(screen.getByText('playerone@rallycourt.local')).toBeInTheDocument()
+    expect(within(screen.getByLabelText('Court details')).getByText(/750\.00/)).toBeInTheDocument()
   })
 
   it('supports pagination controls for court inventory', async () => {
@@ -229,6 +231,7 @@ describe('CourtManagementPage', () => {
       status: 'AVAILABLE',
       openTime: '08:00:00',
       closeTime: '22:00:00',
+      hourlyRate: 750,
       upcomingReservations: [],
     })
 

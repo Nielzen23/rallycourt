@@ -145,7 +145,7 @@ class ReservationServiceTest {
     void createReservationRejectsOverlap() {
         CreateReservationRequest request = new CreateReservationRequest();
         request.setCourtId(1L);
-        request.setStartTime(LocalDateTime.now().plusHours(2));
+        request.setStartTime(LocalDateTime.now().plusDays(1).withHour(10).withMinute(0));
         request.setDurationMinutes(60);
 
         Court court = new Court();
@@ -183,7 +183,7 @@ class ReservationServiceTest {
                 () -> reservationService.createReservation(request)
         );
 
-        assertEquals("Reservations can only be created within the next 2 weeks.", exception.getMessage());
+        assertEquals("Reservations must start from tomorrow and be within the next 2 weeks.", exception.getMessage());
     }
 
     @Test
@@ -198,7 +198,22 @@ class ReservationServiceTest {
                 () -> reservationService.createReservation(request)
         );
 
-        assertEquals("Reservations can only be created within the next 2 weeks.", exception.getMessage());
+        assertEquals("Reservations must start from tomorrow and be within the next 2 weeks.", exception.getMessage());
+    }
+
+    @Test
+    void createReservationRejectsStartTimeLaterToday() {
+        CreateReservationRequest request = new CreateReservationRequest();
+        request.setCourtId(1L);
+        request.setStartTime(LocalDateTime.now().plusHours(2));
+        request.setDurationMinutes(60);
+
+        ReservationValidationException exception = assertThrows(
+                ReservationValidationException.class,
+                () -> reservationService.createReservation(request)
+        );
+
+        assertEquals("Reservations must start from tomorrow and be within the next 2 weeks.", exception.getMessage());
     }
 
     @Test
@@ -362,7 +377,7 @@ class ReservationServiceTest {
     void createReservationRejectsMissingCourtBeforeLocking() {
         CreateReservationRequest request = new CreateReservationRequest();
         request.setCourtId(99L);
-        request.setStartTime(LocalDateTime.now().plusHours(2));
+        request.setStartTime(LocalDateTime.now().plusDays(1).withHour(10).withMinute(0));
         request.setDurationMinutes(60);
 
         when(courtRepository.findById(99L)).thenReturn(Optional.empty());
@@ -375,7 +390,7 @@ class ReservationServiceTest {
     void createReservationRejectsMissingCourtDuringLocking() {
         CreateReservationRequest request = new CreateReservationRequest();
         request.setCourtId(1L);
-        request.setStartTime(LocalDateTime.now().plusHours(2));
+        request.setStartTime(LocalDateTime.now().plusDays(1).withHour(10).withMinute(0));
         request.setDurationMinutes(60);
 
         Court court = new Court();

@@ -86,6 +86,7 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
     @Test
     void createReservationStoresPendingPaymentWithExpiration() throws Exception {
         Court savedCourt = saveOwnedCourt();
+        LocalDateTime reservationStart = LocalDateTime.now().plusDays(1).withHour(10).withMinute(0).withSecond(0).withNano(0);
 
         mockMvc.perform(post("/api/reservations")
                         .header("Authorization", "Bearer " + adminToken)
@@ -96,7 +97,7 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
                                   "startTime": "%s",
                                   "durationMinutes": 90
                                 }
-                                """.formatted(savedCourt.getId(), format(LocalDateTime.now().plusHours(2)))))
+                                """.formatted(savedCourt.getId(), format(reservationStart))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("RESERVED_PENDING_PAYMENT"))
                 .andExpect(jsonPath("$.reservedBy").value(ADMIN_EMAIL))
@@ -167,7 +168,7 @@ class ReservationIntegrationTest extends AbstractIntegrationTest {
                                 }
                                 """.formatted(savedCourt.getId(), format(LocalDateTime.now().plusDays(15)))))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Reservations can only be created within the next 2 weeks."));
+                .andExpect(jsonPath("$.message").value("Reservations must start from tomorrow and be within the next 2 weeks."));
     }
 
     @Test
