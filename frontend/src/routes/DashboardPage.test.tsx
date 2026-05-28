@@ -348,7 +348,7 @@ describe('DashboardPage', () => {
 
     const historySection = await screen.findByLabelText('Reservation history list')
 
-    expect(screen.getByText('Reservation History')).toBeInTheDocument()
+    expect(screen.getByText('Booking History')).toBeInTheDocument()
     expect(within(historySection).getByRole('heading', { name: 'South Court' })).toBeInTheDocument()
     expect(within(historySection).getByText('History, Booker')).toBeInTheDocument()
     expect(within(historySection).getByText('09981234567')).toBeInTheDocument()
@@ -363,7 +363,7 @@ describe('DashboardPage', () => {
 
     const historySection = await screen.findByLabelText('Reservation history list')
 
-    expect(screen.getByText('Reservation History')).toBeInTheDocument()
+    expect(screen.getByText('Booking History')).toBeInTheDocument()
     expect(within(historySection).getByRole('heading', { name: 'South Court' })).toBeInTheDocument()
     expect(within(historySection).queryByText('History, Booker')).not.toBeInTheDocument()
     expect(within(historySection).queryByText('09981234567')).not.toBeInTheDocument()
