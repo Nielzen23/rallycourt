@@ -20,6 +20,8 @@ import com.rallycourt.court.entity.VenueType;
 import com.rallycourt.court.repository.CourtRepository;
 import com.rallycourt.court.repository.CourtTypeRepository;
 import com.rallycourt.court.repository.VenueTypeRepository;
+import com.rallycourt.payment.repository.PaymentRepository;
+import com.rallycourt.reservation.repository.ReservationRepository;
 import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +56,12 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private VenueTypeRepository venueTypeRepository;
 
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     private String adminToken;
     private String ownerToken;
     private String playerToken;
@@ -64,6 +72,8 @@ class CourtIntegrationTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        paymentRepository.deleteAll();
+        reservationRepository.deleteAll();
         courtRepository.deleteAll();
         adminUser = userRepository.findByEmail(ADMIN_EMAIL).orElseThrow();
         ownerUser = ensureUser("courtownerone@rallycourt.local", "Court", "Owner", "COURT_OWNER", CourtOwnerStatus.APPROVED);

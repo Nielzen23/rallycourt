@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:rallycourt;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:rallycourt;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -8,7 +8,7 @@ spring:
     hibernate:
       ddl-auto: none
   liquibase:
-    change-log: classpath:db/changelog/postgres/db.changelog-master.yaml
+    change-log: classpath:db/changelog/postgres/db.changelog-test.yaml
 
 app:
   jwt:

@@ -35,10 +35,12 @@ The project is split into separate frontend and backend services and is designed
 
 ### Booking Limitations
 - Reservations are constrained by court availability and configured court status.
+- Court bookings are only allowed within the next 2 weeks.
 - Booking duration affects computed reservation amount.
 - Ongoing reservations and reservation history are separated in the dashboard.
 - Reservation lists are paginated in the dashboard for easier review.
 - Payment is currently handled as an internal mocked flow, not through a live gateway.
+- Unpaid bookings will temporarily reserve the selected schedule for 5 minutes.
 
 ### What Users Can Do
 - Register and sign in
@@ -68,6 +70,26 @@ The application follows a separated frontend-backend architecture:
 - Liquibase manages database schema and seed changes for both PostgreSQL and MongoDB.
 - Docker Compose is used to run the local multi-service environment.
 
+## Session Management
+
+- The backend does not store JWTs server-side.
+- Authentication requests return two tokens: a short-lived JWT and a server-stored session token.
+- The JWT is sent in the `Authorization: Bearer <token>` header and is validated statelessly by Spring Security.
+- JWT expiry is currently set to 20 minutes.
+- The session token is stored in PostgreSQL and is used only to renew the session through `/api/auth/refresh`.
+- Session token expiry is currently set to 8 hours.
+- When a session token is used for refresh, the previous token is invalidated and a new JWT plus a new session token are issued.
+- The backend does not use server-side HTTP sessions; Spring Security is configured with `SessionCreationPolicy.STATELESS`.
+
+## Geoapify Usage
+
+- Geoapify is used for court geolocation and address autocomplete features.
+- The integration is used to retrieve exact map coordinates and provide address suggestions during court registration and search workflows.
+- The current Geoapify account uses the free-tier plan intended for development/testing purposes only.
+- Current limitations:
+  - 3,000 API requests per day
+  - 5 requests per second
+
 ## Running the Application
 
 ### Prerequisites
@@ -80,12 +102,23 @@ The application follows a separated frontend-backend architecture:
 ```bash
 docker compose -f docker/docker-compose.yaml up
 ```
+- Docker Compose automatically initializes PostgreSQL, MongoDB, and application dependencies.
+- Initial startup may take a few minutes during image build and database initialization.
+
+### Default Local URLs
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8080
 
 ### Default Admin Account
 
 - Email: `adminrallycourt@rallycourt.local`
 - Password: `RallyCourt123`
 
+### Development Data
+
+- The application includes pre-seeded development data managed through Liquibase migrations.
+- Sample data such as users, courts, and bookings are automatically populated during application startup for the development environment.
 
 ## Design Decisions
 

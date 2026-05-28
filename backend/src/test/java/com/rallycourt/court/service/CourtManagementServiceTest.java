@@ -112,6 +112,20 @@ class CourtManagementServiceTest {
     }
 
     @Test
+    void getCourtsReturnsUnfilteredPageWhenFiltersAreBlank() {
+        Court court = new Court();
+        court.setName("Managed Court");
+
+        when(courtRepository.findAllFiltered(null, null, null, PageRequest.of(0, 10)))
+                .thenReturn(new PageImpl<>(List.of(court), PageRequest.of(0, 10), 1));
+
+        CourtPageResponse response = courtManagementService.getCourts(" ", " ", " ", 0, 10);
+
+        assertEquals(1, response.totalElements());
+        assertEquals("Managed Court", response.content().getFirst().getName());
+    }
+
+    @Test
     void getAddressSuggestionsDelegatesTrimmedQuery() {
         when(geocodingService.autocomplete("Makati")).thenReturn(List.of());
 
@@ -119,6 +133,16 @@ class CourtManagementServiceTest {
 
         assertSame(List.of(), response);
         verify(geocodingService).autocomplete("Makati");
+    }
+
+    @Test
+    void getAddressSuggestionsUsesEmptyQueryWhenNull() {
+        when(geocodingService.autocomplete("")).thenReturn(List.of());
+
+        List<?> response = courtManagementService.getAddressSuggestions(null);
+
+        assertSame(List.of(), response);
+        verify(geocodingService).autocomplete("");
     }
 
     @Test
@@ -162,6 +186,79 @@ class CourtManagementServiceTest {
     }
 
     @Test
+    void createCourtRejectsUnsupportedCourtType() {
+        CourtManagementRequest request = request("Managed Court", "Makati City", "TENNIS", "INDOOR", "AVAILABLE");
+        when(courtTypeRepository.findByCode("TENNIS")).thenReturn(Optional.empty());
+
+        CourtValidationException exception = assertThrows(
+                CourtValidationException.class,
+                () -> courtManagementService.createCourt(request)
+        );
+
+        assertEquals("Unsupported court type: TENNIS", exception.getMessage());
+    }
+
+    @Test
+    void createCourtRejectsUnsupportedVenueType() {
+        CourtManagementRequest request = request("Managed Court", "Makati City", "BADMINTON", "ROOFED", "AVAILABLE");
+        when(courtTypeRepository.findByCode("BADMINTON")).thenReturn(Optional.of(badminton));
+        when(venueTypeRepository.findByCode("ROOFED")).thenReturn(Optional.empty());
+
+        CourtValidationException exception = assertThrows(
+                CourtValidationException.class,
+                () -> courtManagementService.createCourt(request)
+        );
+
+        assertEquals("Unsupported venue type: ROOFED", exception.getMessage());
+    }
+
+    @Test
+    void createCourtRejectsMissingStatus() {
+        CourtManagementRequest request = request("Managed Court", "Makati City", "BADMINTON", "INDOOR", null);
+        when(courtTypeRepository.findByCode("BADMINTON")).thenReturn(Optional.of(badminton));
+        when(venueTypeRepository.findByCode("INDOOR")).thenReturn(Optional.of(indoor));
+
+        CourtValidationException exception = assertThrows(
+                CourtValidationException.class,
+                () -> courtManagementService.createCourt(request)
+        );
+
+        assertEquals("Court status is required", exception.getMessage());
+    }
+
+    @Test
+    void createCourtRejectsUnsupportedStatus() {
+        CourtManagementRequest request = request("Managed Court", "Makati City", "BADMINTON", "INDOOR", "BROKEN");
+        when(courtTypeRepository.findByCode("BADMINTON")).thenReturn(Optional.of(badminton));
+        when(venueTypeRepository.findByCode("INDOOR")).thenReturn(Optional.of(indoor));
+
+        CourtValidationException exception = assertThrows(
+                CourtValidationException.class,
+                () -> courtManagementService.createCourt(request)
+        );
+
+        assertEquals("Unsupported court status: BROKEN", exception.getMessage());
+    }
+
+    @Test
+    void createCourtRejectsInvalidOperatingHours() {
+        CourtManagementRequest request = request("Managed Court", "Makati City", "BADMINTON", "INDOOR", "AVAILABLE");
+        request.setOpenTime(LocalTime.of(22, 0));
+        request.setCloseTime(LocalTime.of(8, 0));
+
+        when(courtTypeRepository.findByCode("BADMINTON")).thenReturn(Optional.of(badminton));
+        when(venueTypeRepository.findByCode("INDOOR")).thenReturn(Optional.of(indoor));
+        when(courtTypeVenueTypeRepository.existsByCourtType_CodeAndVenueType_Code("BADMINTON", "INDOOR")).thenReturn(true);
+
+        CourtValidationException exception = assertThrows(
+                CourtValidationException.class,
+                () -> courtManagementService.createCourt(request)
+        );
+
+        assertEquals("Open time must be earlier than close time", exception.getMessage());
+    }
+
+    @Test
     void updateCourtGeocodesWhenLocationChanges() {
         Court court = existingCourt();
         CourtManagementRequest request = request("Updated Court", "Ortigas Center", "BADMINTON", "INDOOR", "UNAVAILABLE");
@@ -185,6 +282,50 @@ class CourtManagementServiceTest {
     }
 
     @Test
+    void updateCourtKeepsCoordinatesWhenLocationDoesNotChange() {
+        Court court = existingCourt();
+        CourtManagementRequest request = request("Updated Court", "Makati City", "BADMINTON", "INDOOR", "AVAILABLE");
+
+        when(courtRepository.findById(10L)).thenReturn(Optional.of(court));
+        when(courtTypeRepository.findByCode("BADMINTON")).thenReturn(Optional.of(badminton));
+        when(venueTypeRepository.findByCode("INDOOR")).thenReturn(Optional.of(indoor));
+        when(courtTypeVenueTypeRepository.existsByCourtType_CodeAndVenueType_Code("BADMINTON", "INDOOR")).thenReturn(true);
+        when(courtRepository.save(court)).thenReturn(court);
+
+        Court updated = courtManagementService.updateCourt(10L, request);
+
+        assertEquals(14.5547, updated.getLatitude());
+        verify(geocodingService, never()).geocode(any());
+    }
+
+    @Test
+    void updateCourtUsesExistingTimesWhenRequestOmitsThem() {
+        Court court = existingCourt();
+        CourtManagementRequest request = request("Updated Court", "Makati City", "BADMINTON", "INDOOR", "AVAILABLE");
+        request.setOpenTime(null);
+        request.setCloseTime(null);
+
+        when(courtRepository.findById(10L)).thenReturn(Optional.of(court));
+        when(courtTypeRepository.findByCode("BADMINTON")).thenReturn(Optional.of(badminton));
+        when(venueTypeRepository.findByCode("INDOOR")).thenReturn(Optional.of(indoor));
+        when(courtTypeVenueTypeRepository.existsByCourtType_CodeAndVenueType_Code("BADMINTON", "INDOOR")).thenReturn(true);
+        when(courtRepository.save(court)).thenReturn(court);
+
+        Court updated = courtManagementService.updateCourt(10L, request);
+
+        assertEquals(LocalTime.of(8, 0), updated.getOpenTime());
+        assertEquals(LocalTime.of(22, 0), updated.getCloseTime());
+    }
+
+    @Test
+    void updateCourtRejectsMissingCourt() {
+        CourtManagementRequest request = request("Updated Court", "Makati City", "BADMINTON", "INDOOR", "AVAILABLE");
+        when(courtRepository.findById(10L)).thenReturn(Optional.empty());
+
+        assertThrows(CourtNotFoundException.class, () -> courtManagementService.updateCourt(10L, request));
+    }
+
+    @Test
     void deleteCourtRejectsActiveFutureReservations() {
         Court court = existingCourt();
         when(courtRepository.findById(10L)).thenReturn(Optional.of(court));
@@ -196,6 +337,24 @@ class CourtManagementServiceTest {
         );
 
         assertEquals("Court cannot be deleted while it has active future reservations", exception.getMessage());
+    }
+
+    @Test
+    void deleteCourtDeletesWhenNoActiveFutureReservationsExist() {
+        Court court = existingCourt();
+        when(courtRepository.findById(10L)).thenReturn(Optional.of(court));
+        when(reservationRepository.existsByCourtIdAndStatusInAndStartTimeGreaterThan(eq(10L), any(), any())).thenReturn(false);
+
+        courtManagementService.deleteCourt(10L);
+
+        verify(courtRepository).delete(court);
+    }
+
+    @Test
+    void deleteCourtRejectsMissingCourt() {
+        when(courtRepository.findById(10L)).thenReturn(Optional.empty());
+
+        assertThrows(CourtNotFoundException.class, () -> courtManagementService.deleteCourt(10L));
     }
 
     @Test
@@ -233,10 +392,63 @@ class CourtManagementServiceTest {
     }
 
     @Test
+    void getCourtDetailsRejectsMissingCourt() {
+        when(courtRepository.findById(10L)).thenReturn(Optional.empty());
+
+        assertThrows(CourtNotFoundException.class, () -> courtManagementService.getCourtDetails(10L));
+    }
+
+    @Test
     void getUpcomingReservationsRejectsMissingCourt() {
         when(courtRepository.existsById(99L)).thenReturn(false);
 
         assertThrows(CourtNotFoundException.class, () -> courtManagementService.getUpcomingReservations(99L));
+    }
+
+    @Test
+    void getUpcomingReservationsMarksMissingSuccessfulPaymentAsPending() {
+        Reservation reservation = new Reservation();
+        reservation.setId(20L);
+        reservation.setReservedBy("player@rallycourt.local");
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        reservation.setStartTime(LocalDateTime.now().plusDays(1).withHour(10).withMinute(0));
+        reservation.setEndTime(reservation.getStartTime().plusMinutes(60));
+
+        when(courtRepository.existsById(10L)).thenReturn(true);
+        when(reservationRepository.findByCourtIdAndStartTimeGreaterThanEqualOrderByStartTimeAsc(eq(10L), any()))
+                .thenReturn(List.of(reservation));
+        when(paymentRepository.findByReservationIdIn(List.of(20L))).thenReturn(List.of());
+
+        List<CourtManagementReservationSummary> summaries = courtManagementService.getUpcomingReservations(10L);
+
+        assertEquals("PENDING", summaries.getFirst().paymentStatus());
+    }
+
+    @Test
+    void getUpcomingReservationsUsesLastPaymentWhenDuplicatePaymentsExist() {
+        Reservation reservation = new Reservation();
+        reservation.setId(20L);
+        reservation.setReservedBy("player@rallycourt.local");
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        reservation.setStartTime(LocalDateTime.now().plusDays(1).withHour(10).withMinute(0));
+        reservation.setEndTime(reservation.getStartTime().plusMinutes(60));
+
+        Payment firstPayment = new Payment();
+        firstPayment.setReservationId(20L);
+        firstPayment.setStatus(PaymentStatus.SUCCESS);
+
+        Payment lastPayment = new Payment();
+        lastPayment.setReservationId(20L);
+        lastPayment.setStatus(PaymentStatus.FAILED);
+
+        when(courtRepository.existsById(10L)).thenReturn(true);
+        when(reservationRepository.findByCourtIdAndStartTimeGreaterThanEqualOrderByStartTimeAsc(eq(10L), any()))
+                .thenReturn(List.of(reservation));
+        when(paymentRepository.findByReservationIdIn(List.of(20L))).thenReturn(List.of(firstPayment, lastPayment));
+
+        List<CourtManagementReservationSummary> summaries = courtManagementService.getUpcomingReservations(10L);
+
+        assertEquals("PENDING", summaries.getFirst().paymentStatus());
     }
 
     private CourtManagementRequest request(

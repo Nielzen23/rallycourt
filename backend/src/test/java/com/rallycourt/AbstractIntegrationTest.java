@@ -7,6 +7,8 @@ import com.rallycourt.court.geocoding.GeocodingService;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import com.rallycourt.activity.dto.AdminActivityHistoryPageResponse;
+import com.rallycourt.activity.dto.AdminUserActivitySummaryResponse;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -31,7 +33,20 @@ public abstract class AbstractIntegrationTest {
         @Bean
         @Primary
         ActivityLogService activityLogService() {
-            return (action, actor) -> {
+            return new ActivityLogService() {
+                @Override
+                public void log(String action, String status) {
+                }
+
+                @Override
+                public List<AdminUserActivitySummaryResponse> getUserActivitySummaries() {
+                    return List.of();
+                }
+
+                @Override
+                public AdminActivityHistoryPageResponse getUserActivityHistory(Long userId, int page, int size) {
+                    return new AdminActivityHistoryPageResponse(List.of(), page, size, 0, 0);
+                }
             };
         }
     }

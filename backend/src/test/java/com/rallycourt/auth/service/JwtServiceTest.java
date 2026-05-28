@@ -2,6 +2,7 @@ package com.rallycourt.auth.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.rallycourt.auth.entity.CourtOwnerStatus;
@@ -78,6 +79,23 @@ class JwtServiceTest {
                 .build();
 
         assertFalse(jwtService.isTokenValid(token, userDetails));
+    }
+
+    @Test
+    void generateTokenUsesEmptyStringsForMissingNames() {
+        var user = appUser(ADMIN_EMAIL, "ADMIN");
+        user.setFirstName(null);
+        user.setLastName(null);
+
+        String token = jwtService.generateToken(user);
+
+        assertEquals(ADMIN_EMAIL, jwtService.extractUsername(token));
+        assertEquals("ADMIN", jwtService.extractRole(token));
+    }
+
+    @Test
+    void extractUsernameThrowsForMalformedToken() {
+        assertThrows(io.jsonwebtoken.JwtException.class, () -> jwtService.extractUsername("not-a-token"));
     }
 
     private com.rallycourt.auth.entity.User appUser(String email, String roleCode) {
