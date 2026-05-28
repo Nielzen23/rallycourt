@@ -368,6 +368,7 @@ function DashboardPage() {
   return (
     <PageLayout
       title="Dashboard"
+      description="Protected landing page after authentication. Use it as the navigation hub for court, reservation, and payment workflows."
     >
       <section className="dashboard-grid">
         <div className="dashboard-card dashboard-card--reservations app-card">

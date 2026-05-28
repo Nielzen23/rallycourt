@@ -50,19 +50,6 @@ function addDays(base: Date, days: number) {
   return next
 }
 
-function roundUpToQuarterHour(base: Date) {
-  const next = new Date(base)
-  next.setSeconds(0, 0)
-  const minutes = next.getMinutes()
-  const roundedMinutes = Math.ceil(minutes / 15) * 15
-  if (roundedMinutes === 60) {
-    next.setHours(next.getHours() + 1, 0, 0, 0)
-    return next
-  }
-  next.setMinutes(roundedMinutes, 0, 0)
-  return next
-}
-
 function roundDownToQuarterHour(base: Date) {
   const next = new Date(base)
   next.setSeconds(0, 0)
