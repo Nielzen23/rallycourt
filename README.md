@@ -90,6 +90,12 @@ The application follows a separated frontend-backend architecture:
   - 3,000 API requests per day
   - 5 requests per second
 
+## CI/CD
+
+- GitHub Actions is used for basic CI automation.
+- The pipeline currently performs automated test execution and Docker image build validation.
+- The workflow is intended primarily for development verification and coding exercise automation.
+
 ## Running the Application
 
 ### Prerequisites
