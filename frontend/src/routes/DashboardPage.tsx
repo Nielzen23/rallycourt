@@ -373,16 +373,18 @@ function DashboardPage() {
       <section className="dashboard-grid">
         <div className="dashboard-card dashboard-card--reservations app-card">
           <div className="dashboard-card__header">
-            <strong>Ongoing Reservations</strong>
-            <div className="dashboard-card__actions">
-              <button
-                className="dashboard-action-button app-button"
-                type="button"
-                onClick={() => setIsReservationModalOpen(true)}
-              >
-                Book Court
-              </button>
-            </div>
+            <strong>Bookings</strong>
+            {role !== 'ADMIN' ? (
+              <div className="dashboard-card__actions">
+                <button
+                  className="dashboard-action-button app-button"
+                  type="button"
+                  onClick={() => setIsReservationModalOpen(true)}
+                >
+                  Book Court
+                </button>
+              </div>
+            ) : null}
           </div>
           <span>Track active booking status and payment follow-through.</span>
           <section className="dashboard-reservation-list" aria-label="Reservations list">
@@ -405,7 +407,7 @@ function DashboardPage() {
         </div>
         <div className="dashboard-card dashboard-card--reservations app-card">
           <div className="dashboard-card__header">
-            <strong>Reservation History</strong>
+            <strong>Booking History</strong>
           </div>
           <span>Review bookings that have already finished.</span>
           <section className="dashboard-reservation-list" aria-label="Reservation history list">

@@ -126,6 +126,45 @@ docker compose -f docker/docker-compose.yaml up
 - The application includes pre-seeded development data managed through Liquibase migrations.
 - Sample data such as users, courts, and bookings are automatically populated during application startup for the development environment.
 
+### Accessing PostgreSQL and MongoDB Terminals
+
+When the stack is running through `docker/docker-compose.yaml`, you can open database shells from your terminal with the following commands.
+
+PostgreSQL via container:
+
+```bash
+docker exec -it rallycourt-postgres psql -U rallycourt -d rallycourt
+```
+
+MongoDB via container:
+
+```bash
+docker exec -it rallycourt-mongodb mongosh -u rallycourt -p rallycourt --authenticationDatabase admin rallycourt
+```
+
+If you have local database clients installed on your machine and prefer connecting through the exposed ports instead of `docker exec`, use:
+
+PostgreSQL via local `psql` client:
+
+```bash
+psql -h localhost -p 5432 -U rallycourt -d rallycourt
+```
+
+MongoDB via local `mongosh` client:
+
+```bash
+mongosh "mongodb://rallycourt:rallycourt@localhost:27017/rallycourt?authSource=admin"
+```
+
+Default local database credentials from the Docker Compose setup:
+
+- PostgreSQL database: `rallycourt`
+- PostgreSQL username: `rallycourt`
+- PostgreSQL password: `rallycourt`
+- MongoDB database: `rallycourt`
+- MongoDB username: `rallycourt`
+- MongoDB password: `rallycourt`
+
 ## Design Decisions
 
 - PostgreSQL was used for transactional consistency across court, reservation, payment, and user data.
