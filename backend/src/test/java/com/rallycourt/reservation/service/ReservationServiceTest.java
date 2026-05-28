@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.rallycourt.activity.service.ActivityLogService;
-import com.rallycourt.auth.entity.Role;
 import com.rallycourt.auth.entity.User;
 import com.rallycourt.auth.repository.UserRepository;
 import com.rallycourt.court.entity.Court;
